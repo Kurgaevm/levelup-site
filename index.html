@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Level Up — автоматизация салонов красоты</title>
+<meta name="description" content="Level Up связывает YClients, Telegram, Instagram и WhatsApp в одну живую систему. Записи, напоминания, отзывы и отчёты идут без вашего участия.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M18 2 7 18h7l-2 12L25 13h-8l1-11z' fill='%23ff5c7a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#070b14;
+    --panel:#0d1322;
+    --text:#e9eef8;
+    --muted:#8d9ab3;
+    --coral:#ff5c7a;
+    --cyan:#7dd3fc;
+    --violet:#9a8cff;
+    --gold:#ffd166;
+    --hairline:rgba(255,255,255,.09);
+    --ease:cubic-bezier(0.32,0.72,0,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Manrope',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  ::selection{background:rgba(255,92,122,.35)}
+
+  /* ---------- layers ---------- */
+  #stage{position:absolute;inset:0;z-index:0;display:block;width:100%;height:100%}
+  .glow{
+    position:absolute;inset:0;z-index:1;pointer-events:none;mix-blend-mode:screen;
+    background:
+      radial-gradient(42rem 30rem at 78% 30%, rgba(124,92,255,.14), transparent 65%),
+      radial-gradient(34rem 26rem at 12% 68%, rgba(64,210,170,.09), transparent 60%),
+      radial-gradient(30rem 24rem at 88% 86%, rgba(255,92,122,.08), transparent 60%);
+  }
+  .dotgrid{
+    position:absolute;inset:0;z-index:1;pointer-events:none;
+    background-image:radial-gradient(rgba(255,255,255,.05) 1px, transparent 1.4px);
+    background-size:34px 34px;
+    mask-image:radial-gradient(ellipse 90% 80% at 50% 40%, black 30%, transparent 75%);
+    -webkit-mask-image:radial-gradient(ellipse 90% 80% at 50% 40%, black 30%, transparent 75%);
+  }
+  .grain{
+    position:fixed;inset:0;z-index:40;pointer-events:none;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+  }
+  .vignette{position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(ellipse 120% 100% at 50% 45%, transparent 55%, rgba(4,6,12,.75) 100%);}
+  .scrim{position:absolute;inset:0;z-index:2;pointer-events:none;
+    background:linear-gradient(90deg, rgba(7,11,20,.9) 0%, rgba(7,11,20,.62) 28%, rgba(7,11,20,.22) 48%, transparent 60%);}
+  @media (max-width:1100px){ .scrim{display:none} }
+
+  /* ---------- nav ---------- */
+  nav{
+    position:absolute;top:1.5rem;left:50%;transform:translateX(-50%);z-index:30;
+    display:flex;align-items:center;gap:2.5rem;
+    padding:.55rem .6rem .55rem 1.4rem;border-radius:999px;
+    background:rgba(13,19,34,.55);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    border:1px solid var(--hairline);
+    box-shadow:0 12px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .logo{display:flex;align-items:center;gap:.55rem;font-family:'Unbounded';font-weight:700;font-size:.95rem;letter-spacing:.01em;text-decoration:none;color:var(--text)}
+  .logo .bolt{width:20px;height:20px;flex:none;filter:drop-shadow(0 0 6px rgba(255,92,122,.6))}
+  .nav-links{display:flex;gap:1.8rem}
+  .nav-links a{color:var(--muted);text-decoration:none;font-size:.88rem;font-weight:600;transition:color .5s var(--ease)}
+  .nav-links a:hover{color:var(--text)}
+  .nav-cta{
+    display:flex;align-items:center;gap:.5rem;padding:.6rem 1.15rem;border-radius:999px;
+    background:rgba(255,255,255,.06);border:1px solid var(--hairline);
+    color:var(--text);text-decoration:none;font-size:.88rem;font-weight:700;
+    transition:background .5s var(--ease), transform .5s var(--ease);
+  }
+  .nav-cta:hover{background:rgba(255,255,255,.12);transform:translateY(-1px)}
+  .nav-cta .dot{width:7px;height:7px;border-radius:50%;background:#52d98a;box-shadow:0 0 8px #52d98a}
+
+  /* ---------- hero ---------- */
+  .hero{position:relative;min-height:100dvh;display:flex;flex-direction:column;justify-content:center}
+  .hero-inner{
+    position:relative;z-index:10;width:min(1240px,92vw);margin:0 auto;padding-top:6rem;
+  }
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:.6rem;
+    padding:.45rem 1rem;border-radius:999px;
+    background:rgba(255,92,122,.11);border:1px solid rgba(255,92,122,.38);
+    font-size:.68rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#ffd6df;
+  }
+  .eyebrow .spark{width:6px;height:6px;border-radius:50%;background:var(--coral);box-shadow:0 0 10px var(--coral);animation:pulse 2.4s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  h1{
+    margin-top:1.6rem;max-width:13ch;
+    font-family:'Unbounded';font-weight:800;
+    font-size:clamp(2.4rem,5.2vw,4.3rem);line-height:1.06;letter-spacing:-.015em;
+  }
+  h1 .grad{
+    background:linear-gradient(100deg,var(--coral) 10%,var(--gold) 90%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .sub{
+    margin-top:1.7rem;max-width:44ch;color:var(--muted);
+    font-size:clamp(1rem,1.25vw,1.13rem);line-height:1.65;font-weight:500;
+  }
+  .sub b{color:var(--text);font-weight:600}
+
+  .ctas{display:flex;flex-wrap:wrap;gap:1rem;margin-top:2.6rem}
+  .btn{
+    display:inline-flex;align-items:center;gap:.9rem;
+    padding:.85rem .85rem .85rem 1.6rem;border-radius:999px;text-decoration:none;
+    font-weight:700;font-size:.98rem;cursor:pointer;border:none;
+    transition:transform .5s var(--ease), box-shadow .5s var(--ease), background .5s var(--ease);
+  }
+  .btn:active{transform:scale(.97)}
+  .btn-primary{
+    background:linear-gradient(135deg,#ff5c7a,#ff8a5c);color:#fff;
+    box-shadow:0 10px 36px rgba(255,92,122,.35), inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .btn-primary:hover{transform:translateY(-3px);box-shadow:0 18px 48px rgba(255,92,122,.45)}
+  .btn-primary .ring{
+    width:34px;height:34px;border-radius:50%;flex:none;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(255,255,255,.18);font-size:1rem;
+    transition:transform .5s var(--ease);
+  }
+  .btn-primary:hover .ring{transform:translate(2px,-2px) scale(1.06)}
+  .btn-ghost{
+    background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--hairline);
+    padding:.85rem 1.7rem;font-size:.98rem;
+  }
+  .btn-ghost:hover{background:rgba(255,255,255,.1);transform:translateY(-3px)}
+
+  .trust{margin-top:2.4rem;color:var(--muted);font-size:.83rem;font-weight:600;letter-spacing:.02em}
+  .trust .sep{margin:0 .55rem;opacity:.4}
+
+  /* marquee */
+  .marquee{
+    position:absolute;left:0;right:0;bottom:2.2rem;z-index:10;overflow:hidden;
+    mask-image:linear-gradient(90deg,transparent,black 12%,black 88%,transparent);
+    -webkit-mask-image:linear-gradient(90deg,transparent,black 12%,black 88%,transparent);
+  }
+  .marquee-track{display:flex;gap:3.5rem;width:max-content;animation:slide 34s linear infinite}
+  .marquee-track span{
+    white-space:nowrap;color:#8d9ab3;font-size:.84rem;font-weight:700;letter-spacing:.24em;text-transform:uppercase;
+  }
+  @keyframes slide{to{transform:translateX(-50%)}}
+
+  /* tooltip */
+  #tip{
+    position:fixed;z-index:35;pointer-events:none;opacity:0;transform:translate(-50%,-135%) scale(.94);
+    padding:.55rem .95rem;border-radius:12px;max-width:240px;
+    background:rgba(16,23,42,.92);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(10px);
+    font-size:.78rem;font-weight:600;color:var(--text);line-height:1.45;
+    box-shadow:0 14px 40px rgba(0,0,0,.5);
+    transition:opacity .35s var(--ease), transform .35s var(--ease);
+  }
+  #tip.on{opacity:1;transform:translate(-50%,-135%) scale(1)}
+
+  /* ---------- section ---------- */
+  .section{position:relative;z-index:10;width:min(1240px,92vw);margin:0 auto;padding:9rem 0 7rem}
+  .sec-eyebrow{
+    font-size:.68rem;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--coral);
+  }
+  h2{margin-top:1.1rem;font-family:'Unbounded';font-weight:700;font-size:clamp(1.7rem,3.2vw,2.5rem);line-height:1.15;letter-spacing:-.01em}
+  .sec-sub{margin-top:1.2rem;color:var(--muted);max-width:52ch;line-height:1.65;font-weight:500}
+  .cards{display:grid;grid-template-columns:repeat(12,1fr);gap:1.2rem;margin-top:3.5rem}
+  .shell{
+    padding:.5rem;border-radius:1.6rem;
+    background:rgba(255,255,255,.03);border:1px solid var(--hairline);
+  }
+  .core{
+    height:100%;padding:2.1rem 1.9rem;border-radius:1.25rem;
+    background:linear-gradient(180deg,#101828,#0c1120);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
+  }
+  .card .num{
+    display:inline-flex;padding:.32rem .75rem;border-radius:999px;margin-bottom:1.4rem;
+    background:rgba(255,92,122,.1);border:1px solid rgba(255,92,122,.28);
+    font-family:'Unbounded';font-size:.66rem;font-weight:700;color:#ffc9d5;letter-spacing:.12em;
+  }
+  .card h3{font-family:'Unbounded';font-weight:700;font-size:1.06rem;line-height:1.35}
+  .card p{margin-top:.85rem;color:var(--muted);font-size:.92rem;line-height:1.65;font-weight:500}
+  .c1{grid-column:span 5}.c2{grid-column:span 4}.c3{grid-column:span 3}
+
+  /* ---------- scenarios bento ---------- */
+  .scen-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:1.2rem;margin-top:3.5rem}
+  .scen{transition:transform .6s var(--ease)}
+  .scen:hover{transform:translateY(-5px)}
+  .g3{grid-column:span 3}.g4{grid-column:span 4}.g5{grid-column:span 5}
+  .scen .ico{width:46px;height:46px;border-radius:14px;margin-bottom:1.3rem;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.04);border:1px solid var(--hairline);box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+  .scen .ico svg{width:22px;height:22px}
+  .s1 .ico{color:#7dd3fc}.s2 .ico{color:#52d98a}.s3 .ico{color:#ff5c7a}
+  .s4 .ico{color:#9a8cff}.s5 .ico{color:#ffd166}.s6 .ico{color:#8de0c3}
+
+  /* ---------- features ---------- */
+  .feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.2rem;margin-top:3.5rem}
+  .feat{display:flex;gap:1rem;padding:1.5rem 1.6rem;border-radius:1.25rem;background:rgba(255,255,255,.025);border:1px solid var(--hairline)}
+  .feat svg{flex:none;width:18px;height:18px;margin-top:.2rem;color:var(--coral)}
+  .feat h4{font-family:'Unbounded';font-weight:700;font-size:.92rem;line-height:1.4}
+  .feat p{margin-top:.5rem;color:var(--muted);font-size:.9rem;line-height:1.6;font-weight:500}
+
+  /* ---------- pricing ---------- */
+  .price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin-top:3.5rem}
+  .price{display:flex}
+  .price .core{display:flex;flex-direction:column;width:100%}
+  .price h3{font-family:'Unbounded';font-weight:700;font-size:1.02rem;line-height:1.35}
+  .price .val{margin-top:1rem;font-family:'Unbounded';font-weight:800;font-size:1.85rem;letter-spacing:-.01em}
+  .price .val small{font-size:.85rem;font-weight:600;color:var(--muted)}
+  .price ul{list-style:none;margin-top:1.5rem;margin-bottom:1.7rem;display:flex;flex-direction:column;gap:.7rem}
+  .price li{display:flex;gap:.6rem;color:var(--muted);font-size:.88rem;font-weight:500;line-height:1.5}
+  .price li svg{flex:none;width:16px;height:16px;margin-top:.22rem;color:#52d98a}
+  .price .btn{width:100%;justify-content:center;margin-top:auto}
+  .price-grid.single{grid-template-columns:minmax(0,640px);justify-content:center}
+  .featured{border-color:rgba(255,92,122,.5);box-shadow:0 0 0 1px rgba(255,92,122,.3),0 24px 70px rgba(255,92,122,.14)}
+  .pop{display:inline-flex;padding:.3rem .8rem;border-radius:999px;background:rgba(255,92,122,.12);border:1px solid rgba(255,92,122,.35);font-size:.66rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#ffb3c2;margin-bottom:1.2rem}
+  .note{margin-top:1.6rem;color:var(--muted);font-size:.8rem;font-weight:500}
+
+  /* ---------- faq ---------- */
+  .faq{margin-top:3.2rem;padding:.5rem;border-radius:1.6rem;background:rgba(255,255,255,.02);border:1px solid var(--hairline)}
+  .faq-item{border-radius:1.15rem;transition:background .5s var(--ease)}
+  .faq-item:hover{background:rgba(255,255,255,.025)}
+  .faq-item.open{background:rgba(13,19,34,.65)}
+  .faq-q{width:100%;display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:1.3rem 1.4rem;border:none;background:transparent;cursor:pointer;color:var(--text);font-family:'Manrope',sans-serif;font-weight:700;font-size:.95rem;text-align:left}
+  .faq-q .pl{flex:none;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);border:1px solid var(--hairline);transition:transform .5s var(--ease),background .5s var(--ease),border-color .5s var(--ease),color .5s var(--ease)}
+  .faq-q .pl svg{width:12px;height:12px}
+  .faq-item.open .pl{transform:rotate(45deg);background:rgba(255,92,122,.16);border-color:rgba(255,92,122,.4);color:#ffb3c2}
+  .faq-a{display:grid;grid-template-rows:0fr;transition:grid-template-rows .55s var(--ease)}
+  .faq-item.open .faq-a{grid-template-rows:1fr}
+  .faq-a>div{overflow:hidden}
+  .faq-a p{padding:0 1.4rem 1.35rem;color:var(--muted);font-size:.9rem;line-height:1.65;font-weight:500}
+
+  /* ---------- final cta ---------- */
+  .final{position:relative;z-index:10;width:min(1240px,92vw);margin:0 auto;padding:6rem 0 8rem;text-align:center}
+  .final .sec-sub{margin-inline:auto}
+  .final .ctas{justify-content:center}
+
+  @media (max-width:980px){
+    .scen-grid{grid-template-columns:repeat(2,1fr)}
+    .g3,.g4,.g5{grid-column:span 1}
+    .feat-grid{grid-template-columns:1fr}
+    .price-grid{grid-template-columns:1fr}
+  }
+  @media (max-width:600px){
+    .scen-grid{grid-template-columns:1fr}
+  }
+
+  footer{
+    position:relative;z-index:10;border-top:1px solid var(--hairline);
+    padding:2.6rem 0;margin-top:2rem;
+  }
+  .foot{width:min(1240px,92vw);margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+  .foot p{color:var(--muted);font-size:.85rem;font-weight:600}
+  .foot a{color:var(--text);text-decoration:none;font-weight:700}
+  .foot a:hover{color:var(--coral)}
+
+  /* entry animations */
+  .rv{opacity:0;transform:translateY(26px);filter:blur(8px);animation:rise .95s var(--ease) forwards;animation-delay:var(--d,0s)}
+  @keyframes rise{to{opacity:1;transform:translateY(0);filter:blur(0)}}
+  .io{opacity:0;transform:translateY(30px);filter:blur(8px);transition:opacity .9s var(--ease),transform .9s var(--ease),filter .9s var(--ease);transition-delay:var(--d,0s)}
+  .io.in{opacity:1;transform:translateY(0);filter:blur(0)}
+
+  @media (max-width:1100px){
+    #stage{opacity:.45}
+  }
+  @media (max-width:768px){
+    .nav-links{display:none}
+    nav{gap:1rem;padding-left:1.1rem}
+    .hero-inner{padding-top:7.5rem}
+    .cards{grid-template-columns:1fr}
+    .c1,.c2,.c3{grid-column:span 1}
+    .ctas .btn{width:100%;justify-content:center}
+    .marquee{bottom:1.4rem}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="stage"></canvas>
+<div class="glow"></div>
+<div class="dotgrid"></div>
+<div class="vignette"></div>
+<div class="scrim"></div>
+<div class="grain"></div>
+<div id="tip"></div>
+
+<nav class="rv" style="--d:.05s">
+  <a class="logo" href="#">
+    <svg class="bolt" viewBox="0 0 32 32"><path d="M18 2 7 18h7l-2 12L25 13h-8l1-11z" fill="#ff5c7a"/></svg>
+    Level Up
+  </a>
+  <div class="nav-links">
+    <a href="#scenarios">Сценарии</a>
+    <a href="#how">Как работает</a>
+    <a href="#pricing">Тарифы</a>
+    <a href="#faq">Вопросы</a>
+  </div>
+  <a class="nav-cta" href="https://t.me/levelup_support" target="_blank" rel="noopener">
+    <span class="dot"></span>Написать
+  </a>
+</nav>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow rv" style="--d:.15s"><span class="spark"></span>Автоматизация для салонов красоты</div>
+    <h1 class="rv" style="--d:.25s">Ваш салон работает <span class="grad">сам</span></h1>
+    <p class="sub rv" style="--d:.4s">
+      Level Up связывает <b>YClients, Telegram, Instagram и WhatsApp</b> в одну живую систему.
+      Записи, напоминания, отзывы и отчёты идут без вашего участия.
+    </p>
+    <div class="ctas rv" style="--d:.55s">
+      <a class="btn btn-primary" href="https://t.me/levelup_support" target="_blank" rel="noopener">
+        Обсудить задачу
+        <span class="ring">↗</span>
+      </a>
+      <a class="btn btn-ghost" href="#how">Как это работает</a>
+    </div>
+    <p class="trust rv" style="--d:.7s">
+      Официальные API<span class="sep">·</span>n8n<span class="sep">·</span>внедрение от 7 дней
+    </p>
+  </div>
+  <div class="marquee rv" style="--d:.85s">
+    <div class="marquee-track">
+      <span>YClients</span><span>Telegram</span><span>Instagram</span><span>WhatsApp</span><span>Google Календарь</span><span>Google Sheets</span><span>SMS-рассылки</span><span>Отчёты</span>
+      <span>YClients</span><span>Telegram</span><span>Instagram</span><span>WhatsApp</span><span>Google Календарь</span><span>Google Sheets</span><span>SMS-рассылки</span><span>Отчёты</span>
+    </div>
+  </div>
+</header>
+
+<section class="section" id="scenarios">
+  <div class="io">
+    <div class="sec-eyebrow">Сценарии</div>
+    <h2>Что робот делает вместо администратора</h2>
+    <p class="sec-sub">Каждый сценарий окупается сам: неявки, потерянные заявки и «спящая» база стоят салону дороже, чем настройка.</p>
+  </div>
+  <div class="scen-grid">
+    <div class="shell card scen g5 s1 io" style="--d:.05s">
+      <div class="core">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>
+        <h3>Напоминания о записи</h3>
+        <p>За сутки и за два часа, в Telegram или WhatsApp. Неявки падают, окошки не сгорают впустую.</p>
+      </div>
+    </div>
+    <div class="shell card scen g4 s2 io" style="--d:.12s">
+      <div class="core">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.2 2.4 2.4 4.8-5"/></svg></div>
+        <h3>Подтверждение записи</h3>
+        <p>Клиент нажимает «приду» или «перенести». Отказ мгновенно возвращает окошко в расписание.</p>
+      </div>
+    </div>
+    <div class="shell card scen g3 s3 io" style="--d:.19s">
+      <div class="core">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <h3>Заявки из директа</h3>
+        <p>Сообщения из Instagram и WhatsApp становятся записями. Ответ уходит за минуту, даже в три ночи.</p>
+      </div>
+    </div>
+    <div class="shell card scen g3 s4 io" style="--d:.05s">
+      <div class="core">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4v6h6"/><path d="M3.5 15a9 9 0 1 0 2.1-9.4L3 10"/></svg></div>
+        <h3>Возврат «спящих»</h3>
+        <p>Кто не заходил два месяца, получает личное сообщение с поводом вернуться.</p>
+      </div>
+    </div>
+    <div class="shell card scen g4 s5 io" style="--d:.12s">
+      <div class="core">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.3-6.2 3.3 1.2-6.8-5-4.9 6.9-1z"/></svg></div>
+        <h3>Отзывы после визита</h3>
+        <p>Через два часа после визита робот просит отзыв. Довольным сразу ссылка на Яндекс Карты.</p>
+      </div>
+    </div>
+    <div class="shell card scen g5 s6 io" style="--d:.19s">
+      <div class="core">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20v-7M12 20V5M18 20v-10"/></svg></div>
+        <h3>Утренний отчёт</h3>
+        <p>Каждое утро в вашем Telegram: записи на день, выручка, неявки, загрузка мастеров.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="how">
+  <div class="io">
+    <div class="sec-eyebrow">Как это работает</div>
+    <h2>Три шага, и вы вне рутины</h2>
+    <p class="sec-sub">Никаких «мы пришлём смету через месяц». Смотрю ваш процесс, собираю систему, показываю результат в работе.</p>
+  </div>
+  <div class="cards">
+    <div class="shell card c1 io" style="--d:.05s">
+      <div class="core">
+        <span class="num">01</span>
+        <h3>Слушаем ваш процесс</h3>
+        <p>Разбираем, как к вам приходят клиенты: звонки, директ, WhatsApp, заходы с улицы. Находим, где теряются записи и деньги администратора.</p>
+      </div>
+    </div>
+    <div class="shell card c2 io" style="--d:.15s">
+      <div class="core">
+        <span class="num">02</span>
+        <h3>Связываем сервисы</h3>
+        <p>Подключаем YClients, Telegram, Instagram и WhatsApp на официальных API. Настраиваем сценарии под ваш салон, а не «как у всех».</p>
+      </div>
+    </div>
+    <div class="shell card c3 io" style="--d:.25s">
+      <div class="core">
+        <span class="num">03</span>
+        <h3>Отпускаете рутину</h3>
+        <p>Напоминания, подтверждения, отзывы и отчёты идут сами. Вы занимаетесь мастерами и клиентами.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="why">
+  <div class="io">
+    <div class="sec-eyebrow">Почему это надёжно</div>
+    <h2>Технологии, а не костыли</h2>
+    <p class="sec-sub">Никаких «серых» обходов API и ботов на личных номерах. Только официальные интеграции, которые не отвалятся через месяц.</p>
+  </div>
+  <div class="feat-grid">
+    <div class="feat io" style="--d:.05s">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>
+      <div><h4>Официальные API</h4><p>YClients, Telegram и WhatsApp Business подключены штатно. Без бана номеров и внезапных блокировок.</p></div>
+    </div>
+    <div class="feat io" style="--d:.1s">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>
+      <div><h4>Работает 24/7</h4><p>Ночная заявка из директа получает ответ сразу, а не утром, когда клиент уже записался в другой салон.</p></div>
+    </div>
+    <div class="feat io" style="--d:.15s">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>
+      <div><h4>Всё в ваших аккаунтах</h4><p>Сценарии и данные принадлежат вам. Доступы у вас, вендор-лока нет: в любой момент можете продолжить без меня.</p></div>
+    </div>
+    <div class="feat io" style="--d:.2s">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>
+      <div><h4>Мониторинг сбоев</h4><p>Любой сбой уходит мне в Telegram раньше, чем вы его заметите. На поддержке чиню за часы, не за дни.</p></div>
+    </div>
+    <div class="feat io" style="--d:.25s">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>
+      <div><h4>Правки без программиста</h4><p>Поменять текст сообщения или время напоминания: одна строка в чате, минута работы.</p></div>
+    </div>
+    <div class="feat io" style="--d:.3s">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>
+      <div><h4>Честные сроки</h4><p>Если задача нереализуема или не окупится, скажу до оплаты, а не после.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="pricing">
+  <div class="io">
+    <div class="sec-eyebrow">Тариф</div>
+    <h2>Один тариф, всё включено</h2>
+    <p class="sec-sub">Без смет, доплат за каждый канал и урезанных версий. Одна подписка в месяц, остановить можно в любой момент.</p>
+  </div>
+  <div class="price-grid single">
+    <div class="shell price featured io" style="--d:.1s">
+      <div class="core">
+        <span class="pop">Единый тариф</span>
+        <h3>Салон под ключ</h3>
+        <div class="val">15 000 ₽ <small>/ мес</small></div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>4 канала: YClients, Telegram, Instagram, WhatsApp</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>Безлимитные сообщения и напоминания</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>Все сценарии: записи, подтверждения, отзывы, отчёты</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>Внедрение и настройка входят в цену</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>Поддержка и мониторинг 24/7</li>
+        </ul>
+        <a class="btn btn-primary" href="https://t.me/levelup_support" target="_blank" rel="noopener">Обсудить задачу<span class="ring">↗</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="faq">
+  <div class="io">
+    <div class="sec-eyebrow">Вопросы</div>
+    <h2>Что обычно спрашивают</h2>
+  </div>
+  <div class="faq io">
+    <div class="faq-item open">
+      <button class="faq-q">Сколько занимает внедрение?<span class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
+      <div class="faq-a"><div><p>Точечный сценарий: 3-4 дня. Салон под ключ: 7-10 дней. Ещё пара дней на обкатку на реальных записях, чтобы робот говорил вашим голосом.</p></div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Нужен доступ к нашему YClients?<span class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
+      <div class="faq-a"><div><p>Да, API-ключ с правами на расписание и клиентов. Пароль не нужен, доступ можно отозвать в любой момент.</p></div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">А если у нас не YClients?<span class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
+      <div class="faq-a"><div><p>Напишите, какая у вас система. Если есть API, подключение займёт столько же. Если API нет, скажу честно до начала работ.</p></div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Это законно?<span class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
+      <div class="faq-a"><div><p>Только официальные API. Сообщения уходят клиентам, которые сами оставляли контакты. Отписка работает, стоп-лист ведётся автоматически.</p></div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Что если что-то сломается?<span class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
+      <div class="faq-a"><div><p>Каждый сценарий под мониторингом: сбой приходит мне в Telegram раньше, чем заметите вы. На поддержке чиню за часы, не за дни.</p></div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Кому принадлежат сценарии?<span class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
+      <div class="faq-a"><div><p>Вам. Всё живёт в вашем n8n и ваших аккаунтах. Я не критическая точка: система работает без меня.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="io">
+    <div class="sec-eyebrow">Старт</div>
+    <h2>Через неделю рутина уйдёт роботу</h2>
+    <p class="sec-sub">Разберём ваш процесс, соберём первый сценарий, покажу его в работе на реальных записях. Без предоплаты за разговоры.</p>
+    <div class="ctas">
+      <a class="btn btn-primary" href="https://t.me/levelup_support" target="_blank" rel="noopener">Обсудить задачу<span class="ring">↗</span></a>
+      <a class="btn btn-ghost" href="#scenarios">Посмотреть сценарии</a>
+    </div>
+  </div>
+</section>
+
+<footer id="contacts">
+  <div class="foot io">
+    <p>© 2026 Level Up · автоматизация бьюти-бизнеса</p>
+    <p><a href="https://t.me/levelup_support" target="_blank" rel="noopener">Telegram ↗</a></p>
+  </div>
+</footer>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+const canvas = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x070b14);
+scene.fog = new THREE.Fog(0x070b14, 7.5, 13);
+
+const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 100);
+camera.position.set(0, 0.9, 7.4);
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 1.05, 0.6, 0.22);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+/* ---------- world group (graph) ---------- */
+const world = new THREE.Group();
+scene.add(world);
+
+/* central emblem: wire sphere + gyro rings + glowing bolt */
+const emblem = new THREE.Group();
+world.add(emblem);
+
+const wire = new THREE.Mesh(
+  new THREE.IcosahedronGeometry(1.18, 1),
+  new THREE.MeshBasicMaterial({ color:0x33436b, wireframe:true, transparent:true, opacity:0.5 })
+);
+emblem.add(wire);
+
+const ringMat = new THREE.MeshBasicMaterial({ color:0x3a4d78, wireframe:true, transparent:true, opacity:0.4 });
+const ring1 = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.012, 6, 90), ringMat);
+ring1.rotation.x = Math.PI/2.4;
+const ring2 = new THREE.Mesh(new THREE.TorusGeometry(1.72, 0.012, 6, 90), ringMat);
+ring2.rotation.x = Math.PI/1.8; ring2.rotation.z = 0.5;
+emblem.add(ring1, ring2);
+
+/* lightning bolt */
+const boltShape = new THREE.Shape();
+boltShape.moveTo(0.34, 1.05);
+boltShape.lineTo(-0.2, 0.07);
+boltShape.lineTo(-0.02, 0.07);
+boltShape.lineTo(-0.34, -1.05);
+boltShape.lineTo(0.2, -0.07);
+boltShape.lineTo(0.02, -0.07);
+boltShape.closePath();
+const boltGeo = new THREE.ExtrudeGeometry(boltShape, { depth:0.16, bevelEnabled:true, bevelThickness:0.03, bevelSize:0.03, bevelSegments:2 });
+boltGeo.center();
+const bolt = new THREE.Mesh(boltGeo, new THREE.MeshStandardMaterial({
+  color:0xff5c7a, emissive:0xff3860, emissiveIntensity:2.1, roughness:0.35, metalness:0.1
+}));
+emblem.add(bolt);
+
+const coreDot = new THREE.Mesh(
+  new THREE.SphereGeometry(0.09, 16, 16),
+  new THREE.MeshBasicMaterial({ color:0xffc46b })
+);
+emblem.add(coreDot);
+
+/* ---------- node labels ---------- */
+const NODES = [
+  { name:'Telegram',   color:'#53b7f0', pos:new THREE.Vector3( 2.9,  1.05,  0.6), tip:'Напоминания и записи приходят клиентам в Telegram сами' },
+  { name:'Instagram',  color:'#ff5c7a', pos:new THREE.Vector3( 0.9,  2.15, -1.7), tip:'Заявки и комментарии из Instagram превращаются в записи' },
+  { name:'YClients',   color:'#9a8cff', pos:new THREE.Vector3(-2.7,  0.55,  1.2), tip:'Расписание салона обновляется само' },
+  { name:'WhatsApp',   color:'#52d98a', pos:new THREE.Vector3(-1.5, -1.75, -1.4), tip:'Подтверждения и отзывы уходят без администратора' },
+  { name:'Календарь',  color:'#ffd166', pos:new THREE.Vector3( 2.0, -1.55,  1.5), tip:'Смены, отпуска, окна: расписание знает всё' },
+];
+
+function makeLabel(name, color){
+  const scale = 2;
+  const font = `600 ${17*scale}px Manrope, sans-serif`;
+  const cv = document.createElement('canvas');
+  const ctx = cv.getContext('2d');
+  ctx.font = font;
+  const tw = ctx.measureText(name).width;
+  const padX = 16*scale, dotR = 4.5*scale, gap = 8*scale;
+  const w = Math.ceil(padX*2 + dotR*2 + gap + tw), h = Math.ceil(21*scale*1.9);
+  cv.width = w; cv.height = h;
+  const r = h/2;
+  const c2 = cv.getContext('2d');
+  c2.font = font;
+  // pill
+  c2.beginPath();
+  c2.moveTo(r,0); c2.arcTo(w,0,w,h,r); c2.arcTo(w,h,0,h,r); c2.arcTo(0,h,0,0,r); c2.arcTo(0,0,w,0,r);
+  c2.closePath();
+  c2.fillStyle = 'rgba(11,17,32,0.95)';
+  c2.fill();
+  c2.strokeStyle = 'rgba(255,255,255,0.2)';
+  c2.lineWidth = scale;
+  c2.stroke();
+  // dot
+  c2.beginPath();
+  c2.arc(padX+dotR, h/2, dotR, 0, Math.PI*2);
+  c2.shadowColor = color; c2.shadowBlur = 10*scale;
+  c2.fillStyle = color;
+  c2.fill();
+  c2.shadowBlur = 0;
+  // text
+  c2.fillStyle = '#e9eef8';
+  c2.textBaseline = 'middle';
+  c2.fillText(name, padX + dotR*2 + gap, h/2 + scale*0.5);
+
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  const mat = new THREE.SpriteMaterial({ map:tex, transparent:true, fog:false });
+  const sp = new THREE.Sprite(mat);
+  const k = 0.011;
+  sp.scale.set(w*k, h*k, 1);
+  return sp;
+}
+
+const edges = [];
+const hitMeshes = [];
+NODES.forEach(n => {
+  // anchor dot
+  const dot = new THREE.Mesh(
+    new THREE.SphereGeometry(0.055, 12, 12),
+    new THREE.MeshBasicMaterial({ color:new THREE.Color(n.color) })
+  );
+  dot.position.copy(n.pos);
+  world.add(dot);
+  // label sprite above anchor
+  const label = makeLabel(n.name, n.color);
+  label.position.copy(n.pos).add(new THREE.Vector3(0, 0.3, 0));
+  world.add(label);
+  // invisible hit sphere
+  const hit = new THREE.Mesh(
+    new THREE.SphereGeometry(0.55, 8, 8),
+    new THREE.MeshBasicMaterial({ transparent:true, opacity:0, depthWrite:false })
+  );
+  hit.position.copy(n.pos);
+  world.add(hit);
+  hit.userData = { node:n, label, dot };
+  hitMeshes.push(hit);
+  // edge line to center
+  const pts = [ new THREE.Vector3(0,0,0), n.pos.clone() ];
+  const geo = new THREE.BufferGeometry().setFromPoints(pts);
+  const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color:0x3a4d78, transparent:true, opacity:0.42 }));
+  world.add(line);
+  edges.push({ node:n, line, hit });
+});
+
+/* ---------- pulses ---------- */
+const PULSE_COUNT = 16;
+const pulseGeo = new THREE.SphereGeometry(0.038, 10, 10);
+const pulseColors = [0x7dd3fc, 0xff5c7a, 0xffd166, 0x52d98a, 0x9a8cff];
+const pulses = [];
+for (let i=0;i<PULSE_COUNT;i++){
+  const m = new THREE.Mesh(pulseGeo, new THREE.MeshBasicMaterial({ color:pulseColors[i % pulseColors.length] }));
+  m.visible = false;
+  world.add(m);
+  pulses.push({ mesh:m, edge:null, t:0, dir:1, speed:0.5, wait:Math.random()*2 });
+}
+function armPulse(p){
+  p.edge = edges[Math.floor(Math.random()*edges.length)];
+  p.dir = Math.random() < 0.55 ? 1 : -1;   // 1: node->center, -1: center->node
+  p.t = p.dir === 1 ? 0 : 1;
+  p.speed = 0.35 + Math.random()*0.3;
+  p.mesh.visible = true;
+}
+
+/* ---------- interaction ---------- */
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2(10, 10);
+const mousePx = { x:0, y:0 };
+let hovered = null;
+const tip = document.getElementById('tip');
+
+addEventListener('pointermove', e => {
+  mouse.x = (e.clientX / innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / innerHeight) * 2 + 1;
+  mousePx.x = e.clientX; mousePx.y = e.clientY;
+});
+
+function layout(){
+  const wide = innerWidth > 1100;
+  world.position.set(wide ? 2.35 : 0, wide ? 0.1 : -0.35, 0);
+  world.scale.setScalar(wide ? 1 : 0.82);
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  composer.setSize(innerWidth, innerHeight);
+}
+layout();
+addEventListener('resize', layout);
+
+/* ---------- loop ---------- */
+const clock = new THREE.Clock();
+const camBase = new THREE.Vector3(0, 0.9, 7.4);
+
+function animate(){
+  requestAnimationFrame(animate);
+  if (document.hidden) return;
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t = clock.elapsedTime;
+
+  // slow orbit + breathing
+  world.rotation.y += dt * 0.055;
+  wire.rotation.x += dt * 0.05;
+  wire.rotation.z -= dt * 0.03;
+  ring1.rotation.z += dt * 0.1;
+  ring2.rotation.y -= dt * 0.08;
+  bolt.rotation.y += dt * 0.45;
+  const breath = 1 + Math.sin(t * 1.1) * 0.035;
+  bolt.scale.setScalar(breath);
+  coreDot.scale.setScalar(1 + Math.sin(t * 3.2) * 0.25);
+
+  // raycast hover
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(hitMeshes, false);
+  const hit = hits.length ? hits[0].object : null;
+  if (hit !== hovered){
+    if (hovered){
+      tip.classList.remove('on');
+      document.body.style.cursor = '';
+    }
+    hovered = hit;
+    if (hovered){
+      tip.textContent = hovered.userData.node.tip;
+      tip.classList.add('on');
+      document.body.style.cursor = 'pointer';
+    }
+  }
+  if (hovered){
+    const p = hovered.userData.label.position.clone();
+    world.localToWorld(p);
+    p.project(camera);
+    tip.style.left = ((p.x*0.5+0.5)*innerWidth) + 'px';
+    tip.style.top  = ((-p.y*0.5+0.5)*innerHeight) + 'px';
+  }
+
+  // node hover feedback
+  hitMeshes.forEach(h => {
+    if (!h.userData.base) h.userData.base = h.userData.label.scale.clone();
+    const target = (h === hovered) ? 1.28 : 1;
+    h.userData.cur = (h.userData.cur ?? 1) + (target - (h.userData.cur ?? 1)) * Math.min(1, dt*9);
+    h.userData.label.scale.copy(h.userData.base).multiplyScalar(h.userData.cur);
+    const isH = h === hovered;
+    const op = isH ? 0.95 : 0.42;
+    const col = isH ? 0x9ab4e8 : 0x3a4d78;
+    h.userData.edgeOpacity = (h.userData.edgeOpacity ?? op) + (op - (h.userData.edgeOpacity ?? op)) * Math.min(1, dt*9);
+    edges.forEach(e => {
+      if (e.hit === h){ e.line.material.opacity = h.userData.edgeOpacity; e.line.material.color.setHex(col); }
+    });
+  });
+
+  // pulses
+  pulses.forEach(p => {
+    if (!p.mesh.visible){
+      p.wait -= dt;
+      if (p.wait <= 0) armPulse(p);
+      return;
+    }
+    const boost = (hovered && p.edge && p.edge.hit === hovered) ? 2.4 : 1;
+    p.t += p.dir * p.speed * boost * dt;
+    if ((p.dir === 1 && p.t >= 1) || (p.dir === -1 && p.t <= 0)){
+      p.mesh.visible = false;
+      p.wait = 0.2 + Math.random()*1.8;
+      return;
+    }
+    p.mesh.position.copy(p.edge.node.pos).multiplyScalar(p.t);
+    const fadeIn = Math.min(1, (p.dir===1 ? p.t : 1-p.t) / 0.15 + 0.35);
+    p.mesh.scale.setScalar(0.8 + Math.sin(t*6 + p.t*9) * 0.2 + fadeIn*0.3);
+  });
+
+  // camera parallax
+  camera.position.x += ((camBase.x + mouse.x*0.32) - camera.position.x) * Math.min(1, dt*2.2);
+  camera.position.y += ((camBase.y + mouse.y*0.22) - camera.position.y) * Math.min(1, dt*2.2);
+  camera.lookAt(world.position.x*0.7, 0.1, 0);
+
+  composer.render();
+}
+animate();
+</script>
+
+<script>
+  // scroll reveals
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold:0.15 });
+  document.querySelectorAll('.io').forEach(el => io.observe(el));
+
+  // faq accordion
+  document.querySelectorAll('.faq-item').forEach(it => {
+    it.querySelector('.faq-q').addEventListener('click', () => {
+      const was = it.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(o => o.classList.remove('open'));
+      if (!was) it.classList.add('open');
+    });
+  });
+</script>
+</body>
+</html>
