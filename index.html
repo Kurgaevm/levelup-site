@@ -241,6 +241,40 @@
   .final .sec-sub{margin-inline:auto}
   .final .ctas{justify-content:center}
 
+  /* ---------- light sections ---------- */
+  .light{position:relative;color:#0d1322}
+  .light::before{content:"";position:absolute;inset:0 calc(50% - 50vw);background:#fff;z-index:-1}
+  .light h2,.light h3,.light h4{color:#0d1322}
+  .light .sec-eyebrow{color:#ee3d67}
+  .light .sec-sub{color:#5a6578}
+  .light .shell{background:#fff;border-color:rgba(13,19,34,.09)}
+  .light .core{background:linear-gradient(180deg,#ffffff,#f4f6f9);box-shadow:inset 0 1px 0 #fff,0 1px 2px rgba(13,19,34,.05),0 12px 32px rgba(13,19,34,.05)}
+  .light .card p{color:#5a6578}
+  .light .card .num{background:rgba(238,61,103,.08);border-color:rgba(238,61,103,.25);color:#ee3d67}
+  .light .scen .ico{background:#fff;border-color:rgba(13,19,34,.09)}
+  .light .feat{background:#f7f8fb;border-color:rgba(13,19,34,.09)}
+  .light .feat p{color:#5a6578}
+  .light .price li{color:#5a6578}
+  .light .price li svg{color:#e8546f}
+  .light .faq{background:#f7f8fb;border-color:rgba(13,19,34,.09)}
+  .light .faq-item:hover{background:rgba(13,19,34,.03)}
+  .light .faq-item.open{background:#fff}
+  .light .faq-q{color:#0d1322}
+  .light .faq-q .pl{background:#fff;border-color:rgba(13,19,34,.12)}
+  .light .faq-a p{color:#5a6578}
+  .light .btn-ghost{background:#fff;border-color:rgba(13,19,34,.14);color:#0d1322}
+  .light .btn-ghost:hover{background:#f2f4f8}
+  .light .featured{border-color:rgba(238,61,103,.45);box-shadow:0 0 0 1px rgba(238,61,103,.25),0 24px 60px rgba(238,61,103,.12)}
+  .light .note{color:#8a94a8}
+
+  /* ---------- benefits ---------- */
+  .bene .stat{
+    font-family:'Unbounded';font-weight:800;font-size:clamp(1.6rem,2.4vw,2.1rem);letter-spacing:-.01em;line-height:1.05;
+    background:linear-gradient(100deg,#ee3d67,#ff8a5c);-webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .bene h3{margin-top:.5rem;font-family:'Manrope',sans-serif;font-weight:700;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:#8a94a8}
+  .bene p{margin-top:.95rem;color:#5a6578;font-size:.92rem;line-height:1.6;font-weight:500}
+
   @media (max-width:980px){
     .scen-grid{grid-template-columns:repeat(2,1fr)}
     .g3,.g4,.g5{grid-column:span 1}
@@ -296,6 +330,7 @@
     Level Up
   </a>
   <div class="nav-links">
+    <a href="#benefits">Результаты</a>
     <a href="#scenarios">Сценарии</a>
     <a href="#how">Как работает</a>
     <a href="#pricing">Тарифы</a>
@@ -332,6 +367,59 @@
     </div>
   </div>
 </header>
+
+<section class="section light" id="benefits">
+  <div class="io">
+    <div class="sec-eyebrow">Результаты</div>
+    <h2>Что салон получает на самом деле</h2>
+    <p class="sec-sub">Не «цифровизация ради цифры». Каждый блок закрывает конкретную боль: неявки, потерянные заявки, пустые окошки, молчание базы.</p>
+  </div>
+  <div class="scen-grid">
+    <div class="shell bene g4 io" style="--d:.05s">
+      <div class="core">
+        <div class="stat">−40%</div>
+        <h3>неявок</h3>
+        <p>Напоминания за сутки и за два часа плюс подтверждение одной кнопкой. Клиент сам говорит «приду» или «перенести».</p>
+      </div>
+    </div>
+    <div class="shell bene g4 io" style="--d:.12s">
+      <div class="core">
+        <div class="stat">1 минута</div>
+        <h3>ответ на заявку</h3>
+        <p>Заявки из Instagram и WhatsApp разбираются круглосуточно. Ночной клиент получает ответ раньше, чем уйдёт к конкурентам.</p>
+      </div>
+    </div>
+    <div class="shell bene g4 io" style="--d:.19s">
+      <div class="core">
+        <div class="stat">30 секунд</div>
+        <h3>на запись</h3>
+        <p>Клиент записывается из Telegram или WhatsApp без звонка, без ожидания на линии, без «перезвоните позже».</p>
+      </div>
+    </div>
+    <div class="shell bene g4 io" style="--d:.05s">
+      <div class="core">
+        <div class="stat">+15%</div>
+        <h3>загрузки мастеров</h3>
+        <p>Спящая база получает личные поводы вернуться, а окошко после отказа закрывается сразу, а не сгорает.</p>
+      </div>
+    </div>
+    <div class="shell bene g4 io" style="--d:.12s">
+      <div class="core">
+        <div class="stat">2 часа</div>
+        <h3>и отзыв собран</h3>
+        <p>После визита робот сам просит отзыв. Довольным сразу ссылка на Яндекс Карты: рейтинг растёт без напоминаний.</p>
+      </div>
+    </div>
+    <div class="shell bene g4 io" style="--d:.19s">
+      <div class="core">
+        <div class="stat">9:00</div>
+        <h3>отчёт в Telegram</h3>
+        <p>Записи на день, выручка, неявки и загрузка мастеров приходят каждое утро. Вы видите бизнес целиком.</p>
+      </div>
+    </div>
+  </div>
+  <p class="note io">Оценки по опыту салонов с похожими сценариями. На первых проектах замерим и покажем ваши реальные цифры.</p>
+</section>
 
 <section class="section" id="scenarios">
   <div class="io">
@@ -385,7 +473,7 @@
   </div>
 </section>
 
-<section class="section" id="how">
+<section class="section light" id="how">
   <div class="io">
     <div class="sec-eyebrow">Как это работает</div>
     <h2>Три шага, и вы вне рутины</h2>
@@ -450,7 +538,7 @@
   </div>
 </section>
 
-<section class="section" id="pricing">
+<section class="section light" id="pricing">
   <div class="io">
     <div class="sec-eyebrow">Тариф</div>
     <h2>Один тариф, всё включено</h2>
@@ -508,7 +596,7 @@
   </div>
 </section>
 
-<section class="final">
+<section class="final light">
   <div class="io">
     <div class="sec-eyebrow">Старт</div>
     <h2>Через неделю рутина уйдёт роботу</h2>
