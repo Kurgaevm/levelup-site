@@ -61,7 +61,7 @@
 
   /* ---------- nav ---------- */
   nav{
-    position:absolute;top:1.5rem;left:50%;transform:translateX(-50%);z-index:30;
+    position:absolute;top:1.5rem;left:0;right:0;margin:0 auto;width:fit-content;z-index:30;
     display:flex;align-items:center;gap:2.5rem;
     padding:.55rem .6rem .55rem 1.4rem;border-radius:999px;
     background:rgba(13,19,34,.55);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
@@ -81,6 +81,38 @@
   }
   .nav-cta:hover{background:rgba(255,255,255,.12);transform:translateY(-1px)}
   .nav-cta .dot{width:7px;height:7px;border-radius:50%;background:#52d98a;box-shadow:0 0 8px #52d98a}
+  .burger{
+    display:none;flex:none;width:40px;height:40px;border-radius:50%;
+    flex-direction:column;align-items:center;justify-content:center;gap:5px;
+    background:rgba(255,255,255,.06);border:1px solid var(--hairline);cursor:pointer;padding:0;
+  }
+  .burger span{display:block;width:16px;height:1.6px;border-radius:2px;background:var(--text);transition:transform .45s var(--ease),opacity .3s var(--ease)}
+  @keyframes navDrop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+  @media (max-width:980px){
+    html{scroll-padding-top:5.5rem}
+    nav{
+      position:fixed;top:.7rem;left:.9rem;right:.9rem;margin:0;width:auto;transform:none;
+      gap:.7rem;padding:.55rem .6rem .55rem 1.05rem;
+      background:rgba(10,15,28,.85);
+    }
+    .nav-cta{margin-left:auto}
+    .burger{display:flex}
+    nav.open .burger span:nth-child(1){transform:translateY(6.6px) rotate(45deg)}
+    nav.open .burger span:nth-child(2){opacity:0}
+    nav.open .burger span:nth-child(3){transform:translateY(-6.6px) rotate(-45deg)}
+    .nav-links{
+      position:absolute;top:calc(100% + .55rem);left:0;right:0;
+      display:none;flex-direction:column;gap:.2rem;
+      padding:.55rem;border-radius:1.3rem;
+      background:#0e1526;
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 22px 60px rgba(0,0,0,.55);
+    }
+    nav.open .nav-links{display:flex;animation:navDrop .4s var(--ease)}
+    .nav-links a{padding:.85rem 1.05rem;border-radius:.9rem;font-size:.95rem}
+    .nav-links a:active{background:rgba(255,255,255,.07)}
+  }
 
   /* ---------- hero ---------- */
   .hero{position:relative;min-height:100dvh;display:flex;flex-direction:column;justify-content:center}
@@ -304,8 +336,6 @@
     #stage{opacity:.45}
   }
   @media (max-width:768px){
-    .nav-links{display:none}
-    nav{gap:1rem;padding-left:1.1rem}
     .hero-inner{padding-top:7.5rem}
     .cards{grid-template-columns:1fr}
     .c1,.c2,.c3{grid-column:span 1}
@@ -339,6 +369,9 @@
   <a class="nav-cta" href="https://t.me/levelup_support" target="_blank" rel="noopener">
     <span class="dot"></span>Написать
   </a>
+  <button class="burger" aria-label="Открыть меню" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
 
 <header class="hero">
@@ -921,6 +954,22 @@ animate();
       if (!was) it.classList.add('open');
     });
   });
+
+  // mobile nav
+  const navEl = document.querySelector('nav');
+  const burger = document.querySelector('.burger');
+  if (burger){
+    const closeNav = () => { navEl.classList.remove('open'); burger.setAttribute('aria-expanded','false'); };
+    burger.addEventListener('click', () => {
+      const open = navEl.classList.toggle('open');
+      burger.setAttribute('aria-expanded', String(open));
+    });
+    navEl.querySelectorAll('.nav-links a').forEach(a => a.addEventListener('click', closeNav));
+    document.addEventListener('click', e => {
+      if (navEl.classList.contains('open') && !navEl.contains(e.target)) closeNav();
+    });
+    addEventListener('resize', () => { if (innerWidth > 980) closeNav(); });
+  }
 </script>
 </body>
 </html>
