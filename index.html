@@ -6,6 +6,16 @@
 <title>Level Up — автоматизация салонов красоты</title>
 <meta name="description" content="Level Up связывает YClients, Telegram, Instagram и WhatsApp в одну живую систему. Записи, напоминания, отзывы и отчёты идут без вашего участия.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M18 2 7 18h7l-2 12L25 13h-8l1-11z' fill='%23ff5c7a'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#070b14">
+<meta property="og:title" content="Level Up — ваш салон работает сам">
+<meta property="og:description" content="Автоматизация салонов красоты: YClients, Telegram, Instagram и WhatsApp в одной системе. Записи, напоминания, отзывы и отчёты идут без вашего участия.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://kurgaevm.github.io/levelup-site/">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:image" content="https://kurgaevm.github.io/levelup-site/og.png">
+<meta property="og:image:width" content="2560">
+<meta property="og:image:height" content="1440">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -326,6 +336,52 @@
   .foot a{color:var(--text);text-decoration:none;font-weight:700}
   .foot a:hover{color:var(--coral)}
 
+  /* ---------- messenger modal ---------- */
+  .modal-overlay{
+    position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:1.2rem;
+    background:rgba(4,7,14,.66);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    opacity:0;pointer-events:none;transition:opacity .4s var(--ease);
+  }
+  .modal-overlay.on{opacity:1;pointer-events:auto}
+  .modal{
+    width:min(400px,100%);padding:2rem 1.8rem 1.6rem;border-radius:1.6rem;position:relative;
+    background:linear-gradient(180deg,#111a2e,#0c1220);
+    border:1px solid rgba(255,255,255,.14);
+    box-shadow:0 34px 90px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08);
+    transform:translateY(18px) scale(.96);transition:transform .45s var(--ease);
+  }
+  .modal-overlay.on .modal{transform:translateY(0) scale(1)}
+  .modal-x{
+    position:absolute;top:1rem;right:1rem;width:34px;height:34px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    background:rgba(255,255,255,.05);border:1px solid var(--hairline);color:var(--muted);
+    transition:color .3s var(--ease),background .3s var(--ease);
+  }
+  .modal-x:hover{color:var(--text);background:rgba(255,255,255,.1)}
+  .modal .m-ico{width:46px;height:46px;border-radius:14px;margin-bottom:1.1rem;display:flex;align-items:center;justify-content:center;background:rgba(255,92,122,.12);border:1px solid rgba(255,92,122,.3)}
+  .modal .m-ico svg{width:22px;height:22px;filter:drop-shadow(0 0 8px rgba(255,92,122,.55))}
+  .modal h3{font-family:'Unbounded';font-weight:700;font-size:1.12rem}
+  .modal .m-sub{margin-top:.6rem;color:var(--muted);font-size:.87rem;line-height:1.55;font-weight:500}
+  .msgr-list{display:flex;flex-direction:column;gap:.65rem;margin-top:1.5rem}
+  .msgr{
+    display:flex;align-items:center;gap:.95rem;padding:.9rem 1.05rem;border-radius:1rem;text-decoration:none;
+    background:rgba(255,255,255,.04);border:1px solid var(--hairline);
+    transition:background .35s var(--ease),transform .35s var(--ease),border-color .35s var(--ease);
+  }
+  .msgr:hover{background:rgba(255,255,255,.08);transform:translateX(3px)}
+  .msgr .mi{flex:none;width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);border:1px solid var(--hairline)}
+  .msgr .mi svg{width:20px;height:20px}
+  .msgr .mt{flex:1;min-width:0}
+  .msgr .mt b{display:block;font-size:.94rem;font-weight:700;color:var(--text)}
+  .msgr .mt small{display:block;margin-top:.15rem;color:var(--muted);font-size:.77rem;font-weight:500}
+  .msgr .ma{flex:none;color:var(--muted);transition:transform .35s var(--ease),color .35s var(--ease)}
+  .msgr:hover .ma{transform:translateX(3px);color:var(--text)}
+  .msgr .ma svg{width:15px;height:15px;display:block}
+  .m-tg .mi{color:#53b7f0}.m-wa .mi{color:#52d98a}.m-max .mi{color:#9a8cff}
+  .m-tg:hover{border-color:rgba(83,183,240,.4)}.m-wa:hover{border-color:rgba(82,217,138,.4)}.m-max:hover{border-color:rgba(154,140,255,.4)}
+  .m-note{margin-top:1.3rem;color:var(--muted);font-size:.76rem;font-weight:500;text-align:center}
+  body.locked{overflow:hidden}
+
   /* entry animations */
   .rv{opacity:0;transform:translateY(26px);filter:blur(8px);animation:rise .95s var(--ease) forwards;animation-delay:var(--d,0s)}
   @keyframes rise{to{opacity:1;transform:translateY(0);filter:blur(0)}}
@@ -366,9 +422,9 @@
     <a href="#pricing">Тарифы</a>
     <a href="#faq">Вопросы</a>
   </div>
-  <a class="nav-cta" href="https://t.me/levelup_support" target="_blank" rel="noopener">
+  <button class="nav-cta" data-msgr type="button">
     <span class="dot"></span>Написать
-  </a>
+  </button>
   <button class="burger" aria-label="Открыть меню" aria-expanded="false">
     <span></span><span></span><span></span>
   </button>
@@ -383,10 +439,10 @@
       Записи, напоминания, отзывы и отчёты идут без вашего участия.
     </p>
     <div class="ctas rv" style="--d:.55s">
-      <a class="btn btn-primary" href="https://t.me/levelup_support" target="_blank" rel="noopener">
+      <button class="btn btn-primary" data-msgr type="button">
         Обсудить задачу
         <span class="ring">↗</span>
-      </a>
+      </button>
       <a class="btn btn-ghost" href="#how">Как это работает</a>
     </div>
     <p class="trust rv" style="--d:.7s">
@@ -590,7 +646,7 @@
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>Внедрение и настройка входят в цену</li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>Поддержка и мониторинг 24/7</li>
         </ul>
-        <a class="btn btn-primary" href="https://t.me/levelup_support" target="_blank" rel="noopener">Обсудить задачу<span class="ring">↗</span></a>
+        <button class="btn btn-primary" data-msgr type="button">Обсудить задачу<span class="ring">↗</span></button>
       </div>
     </div>
   </div>
@@ -635,11 +691,42 @@
     <h2>Через неделю рутина уйдёт роботу</h2>
     <p class="sec-sub">Разберём ваш процесс, соберём первый сценарий, покажу его в работе на реальных записях. Без предоплаты за разговоры.</p>
     <div class="ctas">
-      <a class="btn btn-primary" href="https://t.me/levelup_support" target="_blank" rel="noopener">Обсудить задачу<span class="ring">↗</span></a>
+      <button class="btn btn-primary" data-msgr type="button">Обсудить задачу<span class="ring">↗</span></button>
       <a class="btn btn-ghost" href="#scenarios">Посмотреть сценарии</a>
     </div>
   </div>
 </section>
+
+<div class="modal-overlay" id="msgr-modal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Выбрать мессенджер">
+    <button class="modal-x" data-msgr-close aria-label="Закрыть">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <div class="m-ico">
+      <svg viewBox="0 0 32 32"><path d="M18 2 7 18h7l-2 12L25 13h-8l1-11z" fill="#ff5c7a"/></svg>
+    </div>
+    <h3>Напишите нам</h3>
+    <p class="m-sub">Выберите мессенджер, в котором вам удобнее. Отвечает живой консультант, обычно в течение часа.</p>
+    <div class="msgr-list">
+      <a class="msgr m-tg" href="https://t.me/levelup_support" target="_blank" rel="noopener">
+        <span class="mi"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.4 18.9 19c-.2 1-.8 1.2-1.7.8l-4.6-3.4-2.2 2.1c-.2.2-.5.4-.9.4l.3-4.6L18.2 6c.4-.3-.1-.5-.6-.2L7.3 12.3l-4.5-1.4c-1-.3-1-1 .2-1.4l17.6-6.8c.8-.3 1.5.2 1.3 1.7z"/></svg></span>
+        <span class="mt"><b>Telegram</b><small>@levelup_support — самый быстрый путь</small></span>
+        <span class="ma"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
+      </a>
+      <a class="msgr m-wa" href="https://wa.me/79000000000" target="_blank" rel="noopener">
+        <span class="mi"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm5.5 13.9c-.2.7-1.2 1.3-1.9 1.4-.5.1-1.2.2-3.4-.7-2.9-1.2-4.7-4.1-4.9-4.3-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.9 2.1c.1.2.1.4 0 .6l-.4.6-.5.5c-.2.2-.3.4-.1.7.2.3.9 1.5 2 2.4 1.4 1.2 2.5 1.6 2.8 1.7.3.1.5.1.7-.1l1-1.2c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.6.4 0 .1 0 .8-.2 1.5z"/></svg></span>
+        <span class="mt"><b>WhatsApp</b><small>Написать в WhatsApp</small></span>
+        <span class="ma"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
+      </a>
+      <a class="msgr m-max" href="https://max.ru" target="_blank" rel="noopener">
+        <span class="mi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18V7.5L9 13l5-5.5V18"/><path d="M16.5 18V8.5c1.8 0 3.5 1.2 3.5 3.5s-1.7 3.5-3.5 3.5"/></svg></span>
+        <span class="mt"><b>МАКС</b><small>Написать в МАКС</small></span>
+        <span class="ma"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
+      </a>
+    </div>
+    <p class="m-note">Во всех трёх мессенджерах вас встретит один и тот же консультант.</p>
+  </div>
+</div>
 
 <footer id="contacts">
   <div class="foot io">
@@ -972,6 +1059,30 @@ animate();
     });
     addEventListener('resize', () => { if (innerWidth > 980) closeNav(); });
   }
+
+  // messenger modal
+  const modal = document.getElementById('msgr-modal');
+  let lastFocus = null;
+  function openModal(){
+    lastFocus = document.activeElement;
+    modal.classList.add('on');
+    modal.setAttribute('aria-hidden','false');
+    document.body.classList.add('locked');
+    const first = modal.querySelector('.msgr');
+    if (first) setTimeout(() => first.focus(), 60);
+  }
+  function closeModal(){
+    modal.classList.remove('on');
+    modal.setAttribute('aria-hidden','true');
+    document.body.classList.remove('locked');
+    if (lastFocus) lastFocus.focus();
+  }
+  document.querySelectorAll('[data-msgr]').forEach(b => b.addEventListener('click', openModal));
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  document.querySelectorAll('[data-msgr-close]').forEach(b => b.addEventListener('click', closeModal));
+  addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modal.classList.contains('on')) closeModal();
+  });
 </script>
 </body>
 </html>
