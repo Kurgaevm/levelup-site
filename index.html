@@ -3,1087 +3,560 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Level Up — умный бот и интеграция YClients для салонов красоты</title>
-<meta name="description" content="Подключаем к вашему YClients умного бота-администратора: записи из Telegram, Instagram и WhatsApp, напоминания, отзывы и отчёты работают сами. Заявки не теряются.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M18 2 7 18h7l-2 12L25 13h-8l1-11z' fill='%23ff5c7a'/%3E%3C/svg%3E">
-<meta name="theme-color" content="#070b14">
-<meta property="og:title" content="Level Up — ваш YClients работает сам">
-<meta property="og:description" content="Подключаем к вашему YClients умного бота: заявки из Telegram, Instagram и WhatsApp, напоминания, отзывы и отчёты идут сами. Заявки не теряются.">
+<title>Level UP — ИИ-администратор салона на YClients</title>
+<meta name="description" content="Бот отвечает клиенту в WhatsApp, Telegram и MAX за секунды и создаёт запись прямо в YClients. Напоминания снижают неявки. Показываем демо на данных вашего салона.">
+<meta property="og:title" content="Level UP — ИИ-администратор салона на YClients">
+<meta property="og:description" content="Запись из мессенджеров в YClients 24/7. Напоминания, автозаполнение окошек, отчёты владельцу.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://kurgaevm.github.io/levelup-site/">
 <meta property="og:locale" content="ru_RU">
 <meta property="og:image" content="https://kurgaevm.github.io/levelup-site/og.png">
-<meta property="og:image:width" content="2560">
-<meta property="og:image:height" content="1440">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#171321">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23171321'/%3E%3Cpath d='M9 7v14h10v4H5V7z' fill='%23B9A7F2'/%3E%3Cpath d='M17 7h10l-10 10V7z' fill='%23F3C6CE'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#070b14;
-    --panel:#0d1322;
-    --text:#e9eef8;
-    --muted:#8d9ab3;
-    --coral:#ff5c7a;
-    --cyan:#7dd3fc;
-    --violet:#9a8cff;
-    --gold:#ffd166;
-    --hairline:rgba(255,255,255,.09);
-    --ease:cubic-bezier(0.32,0.72,0,1);
-  }
-  *{margin:0;padding:0;box-sizing:border-box}
-  @media (pointer:fine){html{scroll-behavior:smooth}}
-  body{
-    background:var(--bg);
-    color:var(--text);
-    font-family:'Manrope',sans-serif;
-    -webkit-font-smoothing:antialiased;
-    overflow-x:hidden;
-  }
-  ::selection{background:rgba(255,92,122,.35)}
+:root{
+  --bg:#171321;
+  --surface:#1F1A2E;
+  --surface-2:#272039;
+  --line:#37304D;
+  --line-soft:#2C2540;
+  --text:#EFECF6;
+  --muted:#A79EC0;
+  --iris:#B9A7F2;
+  --rose:#F3C6CE;
+  --ok:#86E3AE;
+  --btn-bg:#F2EFFA;
+  --btn-text:#1A1430;
+  --font-display:'Unbounded',sans-serif;
+  --font-body:'Golos Text',sans-serif;
+  --font-chat:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  font-size:1.0625rem;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+a{color:var(--iris)}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--iris);outline-offset:3px;border-radius:4px}
 
-  /* ---------- layers ---------- */
-  #stage{position:absolute;inset:0;z-index:0;display:block;width:100%;height:100%}
-  .glow{
-    position:absolute;inset:0;z-index:1;pointer-events:none;mix-blend-mode:screen;
-    background:
-      radial-gradient(42rem 30rem at 78% 30%, rgba(124,92,255,.14), transparent 65%),
-      radial-gradient(34rem 26rem at 12% 68%, rgba(64,210,170,.09), transparent 60%),
-      radial-gradient(30rem 24rem at 88% 86%, rgba(255,92,122,.08), transparent 60%);
-  }
-  .dotgrid{
-    position:absolute;inset:0;z-index:1;pointer-events:none;
-    background-image:radial-gradient(rgba(255,255,255,.05) 1px, transparent 1.4px);
-    background-size:34px 34px;
-    mask-image:radial-gradient(ellipse 90% 80% at 50% 40%, black 30%, transparent 75%);
-    -webkit-mask-image:radial-gradient(ellipse 90% 80% at 50% 40%, black 30%, transparent 75%);
-  }
-  .grain{
-    position:fixed;inset:0;z-index:40;pointer-events:none;opacity:.05;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
-  }
-  .vignette{position:absolute;inset:0;z-index:1;pointer-events:none;
-    background:radial-gradient(ellipse 120% 100% at 50% 45%, transparent 55%, rgba(4,6,12,.75) 100%);}
-  .scrim{position:absolute;inset:0;z-index:2;pointer-events:none;
-    background:linear-gradient(90deg, rgba(7,11,20,.9) 0%, rgba(7,11,20,.62) 28%, rgba(7,11,20,.22) 48%, transparent 60%);}
-  @media (max-width:1100px){ .scrim{display:none} }
+/* ---------- nav ---------- */
+nav{position:sticky;top:0;z-index:50;background:rgba(23,19,33,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--line-soft)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{font-family:var(--font-display);font-weight:700;font-size:.95rem;letter-spacing:.02em;color:var(--text);text-decoration:none;white-space:nowrap}
+.logo em{font-style:normal;color:var(--iris)}
+nav .links{display:flex;gap:28px;align-items:center}
+nav .links a{color:var(--muted);text-decoration:none;font-size:.925rem}
+nav .links a:hover{color:var(--text)}
+nav .links a.btn:hover{color:var(--btn-text)}
+@media(max-width:760px){nav .links a:not(.nav-cta){display:none}}
 
-  /* ---------- nav ---------- */
-  nav{
-    position:absolute;top:1.5rem;left:0;right:0;margin:0 auto;width:fit-content;z-index:30;
-    display:flex;align-items:center;gap:2.5rem;
-    padding:.55rem .6rem .55rem 1.4rem;border-radius:999px;
-    background:rgba(13,19,34,.55);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
-    border:1px solid var(--hairline);
-    box-shadow:0 12px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
-  }
-  .logo{display:flex;align-items:center;gap:.55rem;font-family:'Unbounded';font-weight:700;font-size:.95rem;letter-spacing:.01em;text-decoration:none;color:var(--text)}
-  .logo .bolt{width:20px;height:20px;flex:none;filter:drop-shadow(0 0 6px rgba(255,92,122,.6))}
-  .nav-links{display:flex;gap:1.8rem}
-  .nav-links a{color:var(--muted);text-decoration:none;font-size:.88rem;font-weight:600;transition:color .5s var(--ease)}
-  .nav-links a:hover{color:var(--text)}
-  .nav-cta{
-    display:flex;align-items:center;gap:.5rem;padding:.6rem 1.15rem;border-radius:999px;
-    background:rgba(255,255,255,.06);border:1px solid var(--hairline);
-    color:var(--text);text-decoration:none;font-size:.88rem;font-weight:700;
-    transition:background .5s var(--ease), transform .5s var(--ease);
-  }
-  .nav-cta:hover{background:rgba(255,255,255,.12);transform:translateY(-1px)}
-  .nav-cta .dot{width:7px;height:7px;border-radius:50%;background:#52d98a;box-shadow:0 0 8px #52d98a}
-  .burger{
-    display:none;flex:none;width:40px;height:40px;border-radius:50%;
-    flex-direction:column;align-items:center;justify-content:center;gap:5px;
-    background:rgba(255,255,255,.06);border:1px solid var(--hairline);cursor:pointer;padding:0;
-  }
-  .burger span{display:block;width:16px;height:1.6px;border-radius:2px;background:var(--text);transition:transform .45s var(--ease),opacity .3s var(--ease)}
-  @keyframes navDrop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+/* ---------- buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:9px;
+  font-family:var(--font-body);font-weight:600;font-size:1rem;
+  padding:14px 26px;border-radius:10px;text-decoration:none;
+  border:1px solid transparent;cursor:pointer;white-space:nowrap;
+}
+.btn-primary{background:var(--btn-bg);color:var(--btn-text)}
+.btn-primary:hover{background:#fff}
+.btn-ghost{background:transparent;color:var(--text);border-color:var(--line)}
+.btn-ghost:hover{border-color:var(--iris)}
+.btn .ic{width:19px;height:19px;flex:none}
 
-  @media (max-width:980px){
-    html{scroll-padding-top:5.5rem}
-    nav{
-      position:fixed;top:.7rem;left:.9rem;right:.9rem;margin:0;width:auto;transform:none;
-      gap:.7rem;padding:.55rem .6rem .55rem 1.05rem;
-      background:rgba(10,15,28,.85);
-    }
-    .nav-cta{margin-left:auto}
-    .burger{display:flex}
-    nav.open .burger span:nth-child(1){transform:translateY(6.6px) rotate(45deg)}
-    nav.open .burger span:nth-child(2){opacity:0}
-    nav.open .burger span:nth-child(3){transform:translateY(-6.6px) rotate(-45deg)}
-    .nav-links{
-      position:absolute;top:calc(100% + .55rem);left:0;right:0;
-      display:none;flex-direction:column;gap:.2rem;
-      padding:.55rem;border-radius:1.3rem;
-      background:#0e1526;
-      border:1px solid rgba(255,255,255,.12);
-      box-shadow:0 22px 60px rgba(0,0,0,.55);
-    }
-    nav.open .nav-links{display:flex;animation:navDrop .4s var(--ease)}
-    .nav-links a{padding:.85rem 1.05rem;border-radius:.9rem;font-size:.95rem}
-    .nav-links a:active{background:rgba(255,255,255,.07)}
-  }
+/* ---------- sections ---------- */
+section{padding:104px 0;border-top:1px solid var(--line-soft)}
+section:first-of-type{border-top:none}
+h2{font-family:var(--font-display);font-weight:600;font-size:clamp(1.35rem,2.6vw,1.9rem);line-height:1.3;margin-bottom:18px;letter-spacing:.005em}
+.lede{color:var(--muted);max-width:640px;margin-bottom:48px}
+@media(max-width:600px){section{padding:72px 0}}
 
-  /* ---------- hero ---------- */
-  .hero{position:relative;min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center}
-  .hero-inner{
-    position:relative;z-index:10;width:min(1240px,92vw);margin:0 auto;padding-top:6rem;
-  }
-  .eyebrow{
-    display:inline-flex;align-items:center;gap:.6rem;
-    padding:.45rem 1rem;border-radius:999px;
-    background:rgba(255,92,122,.11);border:1px solid rgba(255,92,122,.38);
-    font-size:.68rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#ffd6df;
-  }
-  .eyebrow .spark{width:6px;height:6px;border-radius:50%;background:var(--coral);box-shadow:0 0 10px var(--coral);animation:pulse 2.4s infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+/* ---------- hero ---------- */
+.hero{padding:88px 0 96px}
+.hero .wrap{display:grid;grid-template-columns:1.15fr .95fr;gap:56px;align-items:center}
+.hero h1{font-family:var(--font-display);font-weight:700;font-size:clamp(1.7rem,3.6vw,2.7rem);line-height:1.22;letter-spacing:.005em;margin-bottom:22px}
+.hero .sub{color:var(--muted);font-size:1.1rem;max-width:32em;margin-bottom:34px}
+.hero .btns{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.hero .note{font-size:.875rem;color:var(--muted)}
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px}
+.chips span{font-size:.825rem;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:5px 14px;white-space:nowrap}
+@media(max-width:880px){
+  .hero .wrap{grid-template-columns:1fr;gap:48px}
+  .hero{padding:64px 0 72px}
+}
 
-  h1{
-    margin-top:1.6rem;max-width:14ch;
-    font-family:'Unbounded';font-weight:800;
-    font-size:clamp(2.4rem,5.2vw,4.3rem);line-height:1.06;letter-spacing:-.015em;
-  }
-  h1 .grad{
-    background:linear-gradient(100deg,var(--coral) 10%,var(--gold) 90%);
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-  }
-  .sub{
-    margin-top:1.7rem;max-width:54ch;color:var(--muted);
-    font-size:clamp(1rem,1.25vw,1.13rem);line-height:1.65;font-weight:500;
-  }
-  .sub b{color:var(--text);font-weight:600}
+/* ---------- chat panel ---------- */
+.chat{
+  font-family:var(--font-chat);
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:18px;
+  max-width:420px;justify-self:end;width:100%;
+  overflow:hidden;
+}
+.chat-head{display:flex;align-items:center;gap:11px;padding:14px 18px;border-bottom:1px solid var(--line-soft);background:var(--surface-2)}
+.chat-ava{width:38px;height:38px;border-radius:12px;background:var(--iris);color:var(--btn-text);font-family:var(--font-display);font-weight:700;font-size:.8rem;display:flex;align-items:center;justify-content:center;flex:none}
+.chat-head b{font-size:.925rem;font-weight:600;display:block}
+.chat-head small{font-size:.775rem;color:var(--ok);display:flex;align-items:center;gap:6px}
+.chat-head small::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.chat-body{padding:20px 16px 18px;display:flex;flex-direction:column;gap:9px;min-height:380px}
+.msg{max-width:82%;padding:10px 14px;border-radius:14px;font-size:.9rem;line-height:1.45;position:relative}
+.msg time{display:block;font-size:.66rem;color:var(--muted);margin-top:5px}
+.msg-in{align-self:flex-start;background:var(--surface-2);border-bottom-left-radius:4px}
+.msg-out{align-self:flex-end;background:#4A3B6E;color:#F3EFFC;border-bottom-right-radius:4px}
+.sys{align-self:center;font-size:.78rem;color:var(--ok);background:rgba(134,227,174,.09);border:1px solid rgba(134,227,174,.25);border-radius:99px;padding:5px 14px;margin-top:6px}
+.typing{align-self:flex-start;display:flex;gap:4px;padding:13px 16px;background:var(--surface-2);border-radius:14px;border-bottom-left-radius:4px}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:blink 1.2s infinite}
+.typing i:nth-child(2){animation-delay:.2s}
+.typing i:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,60%,100%{opacity:.25}30%{opacity:1}}
 
-  .ctas{display:flex;flex-wrap:wrap;gap:1rem;margin-top:2.6rem}
-  .btn{
-    display:inline-flex;align-items:center;gap:.9rem;
-    padding:.85rem .85rem .85rem 1.6rem;border-radius:999px;text-decoration:none;
-    font-weight:700;font-size:.98rem;cursor:pointer;border:none;
-    transition:transform .5s var(--ease), box-shadow .5s var(--ease), background .5s var(--ease);
-  }
-  .btn:active{transform:scale(.97)}
-  .btn-primary{
-    background:linear-gradient(135deg,#ff5c7a,#ff8a5c);color:#fff;
-    box-shadow:0 10px 36px rgba(255,92,122,.35), inset 0 1px 0 rgba(255,255,255,.25);
-  }
-  .btn-primary:hover{transform:translateY(-3px);box-shadow:0 18px 48px rgba(255,92,122,.45)}
-  .btn-primary .ring{
-    width:34px;height:34px;border-radius:50%;flex:none;
-    display:flex;align-items:center;justify-content:center;
-    background:rgba(255,255,255,.18);font-size:1rem;
-    transition:transform .5s var(--ease);
-  }
-  .btn-primary:hover .ring{transform:translate(2px,-2px) scale(1.06)}
-  .btn-ghost{
-    background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--hairline);
-    padding:.85rem 1.7rem;font-size:.98rem;
-  }
-  .btn-ghost:hover{background:rgba(255,255,255,.1);transform:translateY(-3px)}
+/* message reveal: JS добавляет .shown по одному */
+.chat.sequenced .msg,.chat.sequenced .sys{display:none}
+.chat.sequenced .msg.shown,.chat.sequenced .sys.shown{display:block}
 
-  .trust{margin-top:2.4rem;color:var(--muted);font-size:.83rem;font-weight:600;letter-spacing:.02em}
-  .trust .sep{margin:0 .55rem;opacity:.4}
+/* ---------- problem ---------- */
+.rows{border-top:1px solid var(--line-soft)}
+.row-line{display:grid;grid-template-columns:minmax(200px,.9fr) 1.4fr;gap:10px 40px;padding:26px 0;border-bottom:1px solid var(--line-soft)}
+.row-line b{font-weight:600;font-size:1.05rem;line-height:1.4}
+.row-line p{color:var(--muted);font-size:.975rem}
+.src-note{font-size:.8rem;color:var(--muted);opacity:.75;margin-top:20px}
+@media(max-width:640px){.row-line{grid-template-columns:1fr;gap:6px;padding:22px 0}}
 
-  /* marquee */
-  .marquee{
-    position:absolute;left:0;right:0;bottom:2.2rem;z-index:10;overflow:hidden;
-    mask-image:linear-gradient(90deg,transparent,black 12%,black 88%,transparent);
-    -webkit-mask-image:linear-gradient(90deg,transparent,black 12%,black 88%,transparent);
-  }
-  .marquee-track{display:flex;gap:3.5rem;width:max-content;animation:slide 34s linear infinite}
-  .marquee-track span{
-    white-space:nowrap;color:#8d9ab3;font-size:.84rem;font-weight:700;letter-spacing:.24em;text-transform:uppercase;
-  }
-  @keyframes slide{to{transform:translateX(-50%)}}
+/* ---------- timeline ---------- */
+.tl{max-width:680px;position:relative;padding-left:26px}
+.tl::before{content:'';position:absolute;left:5px;top:14px;bottom:14px;width:1px;background:var(--line)}
+.tl-item{position:relative;padding:0 0 38px}
+.tl-item:last-child{padding-bottom:0}
+.tl-item::before{content:'';position:absolute;left:-26px;top:9px;width:11px;height:11px;border-radius:50%;background:var(--bg);border:2px solid var(--iris)}
+.tl-item.is-ok::before{border-color:var(--ok);background:var(--ok)}
+.tl-time{font-family:var(--font-display);font-weight:500;font-size:.72rem;color:var(--iris);letter-spacing:.06em;margin-bottom:6px;display:block}
+.tl-item.is-ok .tl-time{color:var(--ok)}
+.tl-item b{font-weight:600;font-size:1.05rem;display:block;margin-bottom:4px}
+.tl-item p{color:var(--muted);font-size:.975rem;max-width:34em}
 
-  /* tooltip */
-  #tip{
-    position:fixed;z-index:35;pointer-events:none;opacity:0;transform:translate(-50%,-135%) scale(.94);
-    padding:.55rem .95rem;border-radius:12px;max-width:240px;
-    background:rgba(16,23,42,.92);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(10px);
-    font-size:.78rem;font-weight:600;color:var(--text);line-height:1.45;
-    box-shadow:0 14px 40px rgba(0,0,0,.5);
-    transition:opacity .35s var(--ease), transform .35s var(--ease);
-  }
-  #tip.on{opacity:1;transform:translate(-50%,-135%) scale(1)}
+/* ---------- features ---------- */
+.feats{display:grid;grid-template-columns:1fr 1fr;gap:0 56px;border-top:1px solid var(--line-soft)}
+.feat{padding:24px 0;border-bottom:1px solid var(--line-soft)}
+.feat b{font-weight:600;font-size:1.02rem;display:block;margin-bottom:3px}
+.feat p{color:var(--muted);font-size:.95rem}
+@media(max-width:680px){.feats{grid-template-columns:1fr}}
 
-  /* ---------- section ---------- */
-  .section{position:relative;z-index:10;width:min(1240px,92vw);margin:0 auto;padding:9rem 0 7rem}
-  .sec-eyebrow{
-    font-size:.68rem;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--coral);
-  }
-  h2{margin-top:1.1rem;font-family:'Unbounded';font-weight:700;font-size:clamp(1.7rem,3.2vw,2.5rem);line-height:1.15;letter-spacing:-.01em}
-  .sec-sub{margin-top:1.2rem;color:var(--muted);max-width:52ch;line-height:1.65;font-weight:500}
-  .cards{display:grid;grid-template-columns:repeat(12,1fr);gap:1.2rem;margin-top:3.5rem}
-  .shell{
-    padding:.5rem;border-radius:1.6rem;
-    background:rgba(255,255,255,.03);border:1px solid var(--hairline);
-  }
-  .core{
-    height:100%;padding:2.1rem 1.9rem;border-radius:1.25rem;
-    background:linear-gradient(180deg,#101828,#0c1120);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
-  }
-  .card .num{
-    display:inline-flex;padding:.32rem .75rem;border-radius:999px;margin-bottom:1.4rem;
-    background:rgba(255,92,122,.1);border:1px solid rgba(255,92,122,.28);
-    font-family:'Unbounded';font-size:.66rem;font-weight:700;color:#ffc9d5;letter-spacing:.12em;
-  }
-  .card h3{font-family:'Unbounded';font-weight:700;font-size:1.06rem;line-height:1.35}
-  .card p{margin-top:.85rem;color:var(--muted);font-size:.92rem;line-height:1.65;font-weight:500}
-  .c1{grid-column:span 5}.c2{grid-column:span 4}.c3{grid-column:span 3}
+/* ---------- benefits ---------- */
+.bens{max-width:720px}
+.ben{display:flex;gap:18px;padding:20px 0;border-bottom:1px solid var(--line-soft);align-items:baseline}
+.ben b{font-weight:600;white-space:nowrap}
+.ben span{color:var(--muted)}
+@media(max-width:560px){.ben{flex-direction:column;gap:2px;padding:18px 0}}
 
-  /* ---------- scenarios bento ---------- */
-  .scen-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:1.2rem;margin-top:3.5rem}
-  .scen{transition:transform .6s var(--ease)}
-  .scen:hover{transform:translateY(-5px)}
-  .g3{grid-column:span 3}.g4{grid-column:span 4}.g5{grid-column:span 5}
-  .scen .ico{width:46px;height:46px;border-radius:14px;margin-bottom:1.3rem;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.04);border:1px solid var(--hairline);box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
-  .scen .ico svg{width:22px;height:22px}
-  .s1 .ico{color:#7dd3fc}.s2 .ico{color:#52d98a}.s3 .ico{color:#ff5c7a}
-  .s4 .ico{color:#9a8cff}.s5 .ico{color:#ffd166}.s6 .ico{color:#8de0c3}
+/* ---------- case ---------- */
+.case{
+  background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  padding:44px 48px;max-width:760px;
+}
+.case-tag{font-family:var(--font-display);font-weight:600;font-size:1.15rem;margin-bottom:4px}
+.case small{color:var(--muted);font-size:.85rem;display:block;margin-bottom:22px}
+.case ul{list-style:none}
+.case li{padding:11px 0 11px 26px;border-bottom:1px solid var(--line-soft);position:relative;color:var(--muted);font-size:.975rem}
+.case li:last-child{border-bottom:none}
+.case li::before{content:'';position:absolute;left:2px;top:19px;width:9px;height:9px;border-radius:50%;background:var(--iris)}
+.case .honest{margin-top:26px;padding-top:22px;border-top:1px solid var(--line);font-size:.9rem;color:var(--muted)}
+@media(max-width:600px){.case{padding:30px 24px}}
 
-  /* ---------- features ---------- */
-  .feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.2rem;margin-top:3.5rem}
-  .feat{display:flex;gap:1rem;padding:1.5rem 1.6rem;border-radius:1.25rem;background:rgba(255,255,255,.025);border:1px solid var(--hairline)}
-  .feat svg{flex:none;width:18px;height:18px;margin-top:.2rem;color:var(--coral)}
-  .feat h4{font-family:'Unbounded';font-weight:700;font-size:.92rem;line-height:1.4}
-  .feat p{margin-top:.5rem;color:var(--muted);font-size:.9rem;line-height:1.6;font-weight:500}
+/* ---------- pricing: салонный прайс-борд ---------- */
+.price{max-width:760px;border-top:1px solid var(--line)}
+.p-row{padding:30px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:8px 40px;align-items:baseline}
+.p-row.hot{border-left:2px solid var(--iris);padding-left:24px;margin-left:-26px}
+.p-name{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.p-name b{font-family:var(--font-display);font-weight:600;font-size:1.2rem}
+.p-name .leader{flex:1;min-width:40px;border-bottom:1px dotted var(--line);transform:translateY(-5px)}
+.p-price{font-family:var(--font-display);font-weight:600;font-size:1.3rem;color:var(--text);white-space:nowrap}
+.p-desc{grid-column:1/-1;color:var(--muted);font-size:.95rem;max-width:38em}
+.p-desc em{font-style:normal;color:var(--text)}
+.p-addon{padding:22px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:24px;align-items:baseline}
+.p-addon span{color:var(--muted);font-size:.95rem}
+.p-addon b{font-weight:600;color:var(--iris);white-space:nowrap}
+.price-cta{margin-top:44px;display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.price-cta .note{font-size:.875rem;color:var(--muted)}
+@media(max-width:600px){.p-row.hot{margin-left:-12px;padding-left:14px}}
 
-  /* ---------- pricing ---------- */
-  .price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin-top:3.5rem}
-  .price{display:flex}
-  .price .core{display:flex;flex-direction:column;width:100%}
-  .price h3{font-family:'Unbounded';font-weight:700;font-size:1.02rem;line-height:1.35}
-  .price .val{margin-top:1rem;font-family:'Unbounded';font-weight:800;font-size:1.85rem;letter-spacing:-.01em}
-  .price .val small{font-size:.85rem;font-weight:600;color:var(--muted)}
-  .price ul{list-style:none;margin-top:1.5rem;margin-bottom:1.7rem;display:flex;flex-direction:column;gap:.7rem}
-  .price li{display:flex;gap:.6rem;color:var(--muted);font-size:.88rem;font-weight:500;line-height:1.5}
-  .price li svg{flex:none;width:16px;height:16px;margin-top:.22rem;color:#52d98a}
-  .price .btn{width:100%;justify-content:center;margin-top:auto}
-  .price-grid.single{grid-template-columns:minmax(0,640px);justify-content:center}
-  .featured{border-color:rgba(255,92,122,.5);box-shadow:0 0 0 1px rgba(255,92,122,.3),0 24px 70px rgba(255,92,122,.14)}
-  .pop{display:inline-flex;padding:.3rem .8rem;border-radius:999px;background:rgba(255,92,122,.12);border:1px solid rgba(255,92,122,.35);font-size:.66rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#ffb3c2;margin-bottom:1.2rem}
-  .note{margin-top:1.6rem;color:var(--muted);font-size:.8rem;font-weight:500}
+/* ---------- connect ---------- */
+.steps{counter-reset:st;max-width:720px}
+.step{display:grid;grid-template-columns:52px 1fr;gap:20px;padding:26px 0;border-bottom:1px solid var(--line-soft)}
+.step::before{
+  counter-increment:st;content:counter(st,decimal-leading-zero);
+  font-family:var(--font-display);font-weight:500;font-size:.85rem;color:var(--iris);
+  border:1px solid var(--line);border-radius:10px;height:44px;width:44px;
+  display:flex;align-items:center;justify-content:center;
+}
+.step b{font-weight:600;font-size:1.05rem;display:block;margin-bottom:3px}
+.step p{color:var(--muted);font-size:.975rem}
 
-  /* ---------- faq ---------- */
-  .faq{margin-top:3.2rem;padding:.5rem;border-radius:1.6rem;background:rgba(255,255,255,.02);border:1px solid var(--hairline)}
-  .faq-item{border-radius:1.15rem;transition:background .5s var(--ease)}
-  .faq-item:hover{background:rgba(255,255,255,.025)}
-  .faq-item.open{background:rgba(13,19,34,.65)}
-  .faq-q{width:100%;display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:1.3rem 1.4rem;border:none;background:transparent;cursor:pointer;color:var(--text);font-family:'Manrope',sans-serif;font-weight:700;font-size:.95rem;text-align:left}
-  .faq-q .pl{flex:none;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);border:1px solid var(--hairline);transition:transform .5s var(--ease),background .5s var(--ease),border-color .5s var(--ease),color .5s var(--ease)}
-  .faq-q .pl svg{width:12px;height:12px}
-  .faq-item.open .pl{transform:rotate(45deg);background:rgba(255,92,122,.16);border-color:rgba(255,92,122,.4);color:#ffb3c2}
-  .faq-a{display:grid;grid-template-rows:0fr;transition:grid-template-rows .55s var(--ease)}
-  .faq-item.open .faq-a{grid-template-rows:1fr}
-  .faq-a>div{overflow:hidden}
-  .faq-a p{padding:0 1.4rem 1.35rem;color:var(--muted);font-size:.9rem;line-height:1.65;font-weight:500}
+/* ---------- faq ---------- */
+.faq{max-width:720px}
+details{border-bottom:1px solid var(--line-soft)}
+summary{
+  cursor:pointer;list-style:none;padding:22px 0;
+  font-weight:600;font-size:1.02rem;display:flex;justify-content:space-between;gap:20px;align-items:baseline;
+}
+summary::-webkit-details-marker{display:none}
+summary::after{content:'+';font-family:var(--font-display);color:var(--iris);font-weight:500;flex:none;transition:transform .2s}
+details[open] summary::after{transform:rotate(45deg)}
+details p{color:var(--muted);font-size:.975rem;padding:0 0 24px;max-width:38em}
 
-  /* ---------- final cta ---------- */
-  .final{position:relative;z-index:10;width:min(1240px,92vw);margin:0 auto;padding:6rem 0 8rem;text-align:center}
-  .final .sec-sub{margin-inline:auto}
-  .final .ctas{justify-content:center}
+/* ---------- final cta ---------- */
+.final .wrap{text-align:center;display:flex;flex-direction:column;align-items:center}
+.final h2{max-width:18em}
+.final .lede{margin-bottom:36px}
+.final .btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.final .note{margin-top:18px;font-size:.9rem;color:var(--muted)}
 
-  /* ---------- light sections ---------- */
-  .light{position:relative;color:#0d1322}
-  .light::before{content:"";position:absolute;inset:0 calc(50% - 50vw);background:#fff;z-index:-1}
-  .light h2,.light h3,.light h4{color:#0d1322}
-  .light .sec-eyebrow{color:#ee3d67}
-  .light .sec-sub{color:#5a6578}
-  .light .shell{background:#fff;border-color:rgba(13,19,34,.09)}
-  .light .core{background:linear-gradient(180deg,#ffffff,#f4f6f9);box-shadow:inset 0 1px 0 #fff,0 1px 2px rgba(13,19,34,.05),0 12px 32px rgba(13,19,34,.05)}
-  .light .card p{color:#5a6578}
-  .light .card .num{background:rgba(238,61,103,.08);border-color:rgba(238,61,103,.25);color:#ee3d67}
-  .light .scen .ico{background:#fff;border-color:rgba(13,19,34,.09)}
-  .light .feat{background:#f7f8fb;border-color:rgba(13,19,34,.09)}
-  .light .feat p{color:#5a6578}
-  .light .price li{color:#5a6578}
-  .light .price li svg{color:#e8546f}
-  .light .faq{background:#f7f8fb;border-color:rgba(13,19,34,.09)}
-  .light .faq-item:hover{background:rgba(13,19,34,.03)}
-  .light .faq-item.open{background:#fff}
-  .light .faq-q{color:#0d1322}
-  .light .faq-q .pl{background:#fff;border-color:rgba(13,19,34,.12)}
-  .light .faq-a p{color:#5a6578}
-  .light .btn-ghost{background:#fff;border-color:rgba(13,19,34,.14);color:#0d1322}
-  .light .btn-ghost:hover{background:#f2f4f8}
-  .light .featured{border-color:rgba(238,61,103,.45);box-shadow:0 0 0 1px rgba(238,61,103,.25),0 24px 60px rgba(238,61,103,.12)}
-  .light .note{color:#8a94a8}
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line-soft);padding:44px 0 56px;font-size:.85rem;color:var(--muted)}
+footer .wrap{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}
+footer b{color:var(--text);font-weight:600}
 
-  /* ---------- benefits ---------- */
-  .bene .stat{
-    font-family:'Unbounded';font-weight:800;font-size:clamp(1.6rem,2.4vw,2.1rem);letter-spacing:-.01em;line-height:1.05;
-    background:linear-gradient(100deg,#ee3d67,#ff8a5c);-webkit-background-clip:text;background-clip:text;color:transparent;
-  }
-  .bene h3{margin-top:.5rem;font-family:'Manrope',sans-serif;font-weight:700;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:#8a94a8}
-  .bene p{margin-top:.95rem;color:#5a6578;font-size:.92rem;line-height:1.6;font-weight:500}
-
-  @media (max-width:980px){
-    .scen-grid{grid-template-columns:repeat(2,1fr)}
-    .g3,.g4,.g5{grid-column:span 1}
-    .feat-grid{grid-template-columns:1fr}
-    .price-grid{grid-template-columns:1fr}
-  }
-  @media (max-width:600px){
-    .scen-grid{grid-template-columns:1fr}
-  }
-
-  footer{
-    position:relative;z-index:10;border-top:1px solid var(--hairline);
-    padding:2.6rem 0;margin-top:2rem;
-  }
-  .foot{width:min(1240px,92vw);margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
-  .foot p{color:var(--muted);font-size:.85rem;font-weight:600}
-  .foot a{color:var(--text);text-decoration:none;font-weight:700}
-  .foot a:hover{color:var(--coral)}
-
-  /* ---------- messenger modal ---------- */
-  .modal-overlay{
-    position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:1.2rem;
-    background:rgba(4,7,14,.66);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-    opacity:0;pointer-events:none;transition:opacity .4s var(--ease);
-  }
-  .modal-overlay.on{opacity:1;pointer-events:auto}
-  .modal{
-    width:min(400px,100%);padding:2rem 1.8rem 1.6rem;border-radius:1.6rem;position:relative;
-    background:linear-gradient(180deg,#111a2e,#0c1220);
-    border:1px solid rgba(255,255,255,.14);
-    box-shadow:0 34px 90px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08);
-    transform:translateY(18px) scale(.96);transition:transform .45s var(--ease);
-  }
-  .modal-overlay.on .modal{transform:translateY(0) scale(1)}
-  .modal-x{
-    position:absolute;top:1rem;right:1rem;width:34px;height:34px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;cursor:pointer;
-    background:rgba(255,255,255,.05);border:1px solid var(--hairline);color:var(--muted);
-    transition:color .3s var(--ease),background .3s var(--ease);
-  }
-  .modal-x:hover{color:var(--text);background:rgba(255,255,255,.1)}
-  .modal .m-ico{width:46px;height:46px;border-radius:14px;margin-bottom:1.1rem;display:flex;align-items:center;justify-content:center;background:rgba(255,92,122,.12);border:1px solid rgba(255,92,122,.3)}
-  .modal .m-ico svg{width:22px;height:22px;filter:drop-shadow(0 0 8px rgba(255,92,122,.55))}
-  .modal h3{font-family:'Unbounded';font-weight:700;font-size:1.12rem}
-  .modal .m-sub{margin-top:.6rem;color:var(--muted);font-size:.87rem;line-height:1.55;font-weight:500}
-  .msgr-list{display:flex;flex-direction:column;gap:.65rem;margin-top:1.5rem}
-  .msgr{
-    display:flex;align-items:center;gap:.95rem;padding:.9rem 1.05rem;border-radius:1rem;text-decoration:none;
-    background:rgba(255,255,255,.04);border:1px solid var(--hairline);
-    transition:background .35s var(--ease),transform .35s var(--ease),border-color .35s var(--ease);
-  }
-  .msgr:hover{background:rgba(255,255,255,.08);transform:translateX(3px)}
-  .msgr .mi{flex:none;width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);border:1px solid var(--hairline)}
-  .msgr .mi svg{width:20px;height:20px}
-  .msgr .mt{flex:1;min-width:0}
-  .msgr .mt b{display:block;font-size:.94rem;font-weight:700;color:var(--text)}
-  .msgr .mt small{display:block;margin-top:.15rem;color:var(--muted);font-size:.77rem;font-weight:500}
-  .msgr .ma{flex:none;color:var(--muted);transition:transform .35s var(--ease),color .35s var(--ease)}
-  .msgr:hover .ma{transform:translateX(3px);color:var(--text)}
-  .msgr .ma svg{width:15px;height:15px;display:block}
-  .m-tg .mi{color:#53b7f0}.m-wa .mi{color:#52d98a}.m-max .mi{color:#9a8cff}
-  .m-tg:hover{border-color:rgba(83,183,240,.4)}.m-wa:hover{border-color:rgba(82,217,138,.4)}.m-max:hover{border-color:rgba(154,140,255,.4)}
-  .m-note{margin-top:1.3rem;color:var(--muted);font-size:.76rem;font-weight:500;text-align:center}
-  body.locked{overflow:hidden}
-
-  /* entry animations */
-  .rv{opacity:0;transform:translateY(26px);filter:blur(8px);animation:rise .95s var(--ease) forwards;animation-delay:var(--d,0s)}
-  @keyframes rise{to{opacity:1;transform:translateY(0);filter:blur(0)}}
-  .io{opacity:0;transform:translateY(30px);filter:blur(8px);transition:opacity .9s var(--ease),transform .9s var(--ease),filter .9s var(--ease);transition-delay:var(--d,0s)}
-  .io.in{opacity:1;transform:translateY(0);filter:blur(0)}
-
-  @media (max-width:1100px){
-    #stage{opacity:.45}
-  }
-  @media (max-width:768px){
-    .hero-inner{padding-top:7.5rem}
-    .cards{grid-template-columns:1fr}
-    .c1,.c2,.c3{grid-column:span 1}
-    .ctas .btn{width:100%;justify-content:center}
-    .marquee{bottom:1.4rem}
-  }
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .typing i{animation:none;opacity:.5}
+  *{transition:none!important}
+}
 </style>
 </head>
 <body>
 
-<canvas id="stage"></canvas>
-<div class="glow"></div>
-<div class="dotgrid"></div>
-<div class="vignette"></div>
-<div class="scrim"></div>
-<div class="grain"></div>
-<div id="tip"></div>
-
-<nav class="rv" style="--d:.05s">
-  <a class="logo" href="#">
-    <svg class="bolt" viewBox="0 0 32 32"><path d="M18 2 7 18h7l-2 12L25 13h-8l1-11z" fill="#ff5c7a"/></svg>
-    Level Up
-  </a>
-  <div class="nav-links">
-    <a href="#benefits">Результаты</a>
-    <a href="#scenarios">Сценарии</a>
-    <a href="#how">Как работает</a>
-    <a href="#pricing">Тарифы</a>
-    <a href="#faq">Вопросы</a>
+<nav>
+  <div class="wrap">
+    <a class="logo" href="#top">Level<em>UP</em></a>
+    <div class="links">
+      <a href="#how">Как работает</a>
+      <a href="#price">Тарифы</a>
+      <a href="#case">Кейс</a>
+      <a href="#faq">Вопросы</a>
+      <a class="btn btn-primary nav-cta" style="padding:9px 18px;font-size:.9rem" href="https://t.me/First_connect_levelup_bot" target="_blank" rel="noopener">Демо</a>
+    </div>
   </div>
-  <button class="nav-cta" data-msgr type="button">
-    <span class="dot"></span>Написать
-  </button>
-  <button class="burger" aria-label="Открыть меню" aria-expanded="false">
-    <span></span><span></span><span></span>
-  </button>
 </nav>
 
-<header class="hero">
-  <div class="hero-inner">
-    <div class="eyebrow rv" style="--d:.15s"><span class="spark"></span>Интеграция с YClients для салонов красоты</div>
-    <h1 class="rv" style="--d:.25s">Ваш YClients работает <span class="grad">сам</span></h1>
-    <p class="sub rv" style="--d:.4s">
-      Подключаем к вашему YClients <b>умного бота-администратора</b>. Он сам отвечает клиентам
-      в Telegram, Instagram и WhatsApp, записывает, напоминает о визитах, возвращает «спящих»
-      и утром присылает вам отчёт. Заявки больше не теряются, администратор занимается гостями.
-    </p>
-    <div class="ctas rv" style="--d:.55s">
-      <button class="btn btn-primary" data-msgr type="button">
-        Обсудить задачу
-        <span class="ring">↗</span>
-      </button>
-      <a class="btn btn-ghost" href="#how">Как это работает</a>
+<!-- ============ HERO ============ -->
+<section class="hero" id="top">
+  <div class="wrap">
+    <div>
+      <h1>ИИ-администратор салона: отвечает и записывает клиентов 24/7</h1>
+      <p class="sub">Бот отвечает клиенту в мессенджере за секунды, уточняет услугу, мастера и время и создаёт запись прямо в YClients. Напоминания снижают неявки.</p>
+      <div class="btns">
+        <a class="btn btn-primary" href="https://t.me/First_connect_levelup_bot" target="_blank" rel="noopener">
+          <svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M9.04 15.51 8.9 19.1c.36 0 .7-.15.96-.42l2.3-2.2 4.76 3.48c.87.48 1.5.23 1.72-.8l3.12-14.6c.28-1.3-.47-1.8-1.33-1.5L1.6 9.4c-1.27.5-1.25 1.2-.22 1.5l4.66 1.45L18.3 5.3c.5-.33.96-.15.58.18L9.04 15.5z"/></svg>
+          Telegram
+        </a>
+        <a class="btn btn-ghost" href="#" target="_blank" rel="noopener">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v11H8l-4 3.5V6z" stroke-linejoin="round"/><path d="M8 10.5h8M8 13.5h5" stroke-linecap="round"/></svg>
+          MAX
+        </a>
+      </div>
+      <p class="note">Заявки принимаем в мессенджерах. Покажем демо на примере вашего салона, 5-10 минут.</p>
+      <div class="chips">
+        <span>24/7</span><span>WhatsApp, Telegram, MAX</span><span>YClients</span><span>напоминания</span>
+      </div>
     </div>
-    <p class="trust rv" style="--d:.7s">
-      Официальное API YClients<span class="sep">·</span>4 мессенджера<span class="sep">·</span>внедрение от 7 дней
-    </p>
-  </div>
-  <div class="marquee rv" style="--d:.85s">
-    <div class="marquee-track">
-      <span>YClients</span><span>Telegram</span><span>Instagram</span><span>WhatsApp</span><span>Google Календарь</span><span>Google Sheets</span><span>SMS-рассылки</span><span>Отчёты</span>
-      <span>YClients</span><span>Telegram</span><span>Instagram</span><span>WhatsApp</span><span>Google Календарь</span><span>Google Sheets</span><span>SMS-рассылки</span><span>Отчёты</span>
-    </div>
-  </div>
-</header>
 
-<section class="section light" id="benefits">
-  <div class="io">
-    <div class="sec-eyebrow">Результаты</div>
-    <h2>Что салон получает на самом деле</h2>
-    <p class="sec-sub">Не «цифровизация ради цифры». Каждый блок закрывает конкретную боль: неявки, потерянные заявки, пустые окошки, молчание базы.</p>
-  </div>
-  <div class="scen-grid">
-    <div class="shell bene g4 io" style="--d:.05s">
-      <div class="core">
-        <div class="stat">−40%</div>
-        <h3>неявок</h3>
-        <p>Напоминания за сутки и за два часа плюс подтверждение одной кнопкой. Клиент сам говорит «приду» или «перенести».</p>
+    <div class="chat" id="chat" aria-label="Пример диалога с ботом салона">
+      <div class="chat-head">
+        <div class="chat-ava">ММ</div>
+        <div>
+          <b>Маомао · бот салона</b>
+          <small>онлайн</small>
+        </div>
       </div>
-    </div>
-    <div class="shell bene g4 io" style="--d:.12s">
-      <div class="core">
-        <div class="stat">1 минута</div>
-        <h3>ответ на заявку</h3>
-        <p>Заявки из Instagram и WhatsApp разбираются круглосуточно. Ночной клиент получает ответ раньше, чем уйдёт к конкурентам.</p>
-      </div>
-    </div>
-    <div class="shell bene g4 io" style="--d:.19s">
-      <div class="core">
-        <div class="stat">30 секунд</div>
-        <h3>на запись</h3>
-        <p>Клиент записывается из Telegram или WhatsApp без звонка, без ожидания на линии, без «перезвоните позже».</p>
-      </div>
-    </div>
-    <div class="shell bene g4 io" style="--d:.05s">
-      <div class="core">
-        <div class="stat">+15%</div>
-        <h3>загрузки мастеров</h3>
-        <p>Спящая база получает личные поводы вернуться, а окошко после отказа закрывается сразу, а не сгорает.</p>
-      </div>
-    </div>
-    <div class="shell bene g4 io" style="--d:.12s">
-      <div class="core">
-        <div class="stat">2 часа</div>
-        <h3>и отзыв собран</h3>
-        <p>После визита робот сам просит отзыв. Довольным сразу ссылка на Яндекс Карты: рейтинг растёт без напоминаний.</p>
-      </div>
-    </div>
-    <div class="shell bene g4 io" style="--d:.19s">
-      <div class="core">
-        <div class="stat">9:00</div>
-        <h3>отчёт в Telegram</h3>
-        <p>Записи на день, выручка, неявки и загрузка мастеров приходят каждое утро. Вы видите бизнес целиком.</p>
-      </div>
-    </div>
-  </div>
-  <p class="note io">Оценки по опыту салонов с похожими сценариями. На первых проектах замерим и покажем ваши реальные цифры.</p>
-</section>
-
-<section class="section" id="scenarios">
-  <div class="io">
-    <div class="sec-eyebrow">Сценарии</div>
-    <h2>Что робот делает вместо администратора</h2>
-    <p class="sec-sub">Каждый сценарий окупается сам: неявки, потерянные заявки и «спящая» база стоят салону дороже, чем настройка.</p>
-  </div>
-  <div class="scen-grid">
-    <div class="shell card scen g5 s1 io" style="--d:.05s">
-      <div class="core">
-        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>
-        <h3>Напоминания о записи</h3>
-        <p>За сутки и за два часа, в Telegram или WhatsApp. Неявки падают, окошки не сгорают впустую.</p>
-      </div>
-    </div>
-    <div class="shell card scen g4 s2 io" style="--d:.12s">
-      <div class="core">
-        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.2 2.4 2.4 4.8-5"/></svg></div>
-        <h3>Подтверждение записи</h3>
-        <p>Клиент нажимает «приду» или «перенести». Отказ мгновенно возвращает окошко в расписание.</p>
-      </div>
-    </div>
-    <div class="shell card scen g3 s3 io" style="--d:.19s">
-      <div class="core">
-        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-        <h3>Заявки из директа</h3>
-        <p>Сообщения из Instagram и WhatsApp становятся записями. Ответ уходит за минуту, даже в три ночи.</p>
-      </div>
-    </div>
-    <div class="shell card scen g3 s4 io" style="--d:.05s">
-      <div class="core">
-        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4v6h6"/><path d="M3.5 15a9 9 0 1 0 2.1-9.4L3 10"/></svg></div>
-        <h3>Возврат «спящих»</h3>
-        <p>Кто не заходил два месяца, получает личное сообщение с поводом вернуться.</p>
-      </div>
-    </div>
-    <div class="shell card scen g4 s5 io" style="--d:.12s">
-      <div class="core">
-        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.3-6.2 3.3 1.2-6.8-5-4.9 6.9-1z"/></svg></div>
-        <h3>Отзывы после визита</h3>
-        <p>Через два часа после визита робот просит отзыв. Довольным сразу ссылка на Яндекс Карты.</p>
-      </div>
-    </div>
-    <div class="shell card scen g5 s6 io" style="--d:.19s">
-      <div class="core">
-        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20v-7M12 20V5M18 20v-10"/></svg></div>
-        <h3>Утренний отчёт</h3>
-        <p>Каждое утро в вашем Telegram: записи на день, выручка, неявки, загрузка мастеров.</p>
+      <div class="chat-body">
+        <div class="msg msg-in">Добрый вечер! Хочу маникюр завтра после 18:00<time>21:38</time></div>
+        <div class="msg msg-out">Добрый вечер! Завтра есть окна в 18:30 и 20:00 к Анне. Какое время удобнее?<time>21:38</time></div>
+        <div class="msg msg-in">Давай в 18:30<time>21:39</time></div>
+        <div class="msg msg-out">Готово! Вы записаны: маникюр, мастер Анна, завтра в 18:30. Адрес и напоминание пришлём сюда.<time>21:39</time></div>
+        <div class="sys">Запись создана в YClients</div>
       </div>
     </div>
   </div>
 </section>
 
-<section class="section light" id="how">
-  <div class="io">
-    <div class="sec-eyebrow">Как это работает</div>
-    <h2>Три шага, и вы вне рутины</h2>
-    <p class="sec-sub">Никаких «мы пришлём смету через месяц». Смотрю ваш процесс, собираю систему, показываю результат в работе.</p>
-  </div>
-  <div class="cards">
-    <div class="shell card c1 io" style="--d:.05s">
-      <div class="core">
-        <span class="num">01</span>
-        <h3>Слушаем ваш процесс</h3>
-        <p>Разбираем, как к вам приходят клиенты: звонки, директ, WhatsApp, заходы с улицы. Находим, где теряются записи и деньги администратора.</p>
+<!-- ============ PROBLEM ============ -->
+<section>
+  <div class="wrap">
+    <h2>Пока администратор занят, клиенты уходят</h2>
+    <p class="lede">Салон теряет записи не потому, что услуга плохая, а потому что ответ приходит слишком поздно.</p>
+    <div class="rows">
+      <div class="row-line">
+        <b>Звонок никто не взял</b>
+        <p>По оценкам индустрии, 20-40% входящих обращений салона остаются без ответа: администратор занят, клиент не перезванивает.</p>
+      </div>
+      <div class="row-line">
+        <b>Клиент написал вечером — ответ утром</b>
+        <p>К моменту ответа он уже записан в другом месте. Вечер и выходные — пиковое время записей.</p>
+      </div>
+      <div class="row-line">
+        <b>Подтверждения и переносы — руками</b>
+        <p>Администратор звонит по списку вместо того, чтобы работать с гостями в зале.</p>
+      </div>
+      <div class="row-line">
+        <b>Неявка — потерянное окошко</b>
+        <p>Мастер простаивает, слот не продать задним числом, а в листе ожидания кто-то готов был прийти.</p>
       </div>
     </div>
-    <div class="shell card c2 io" style="--d:.15s">
-      <div class="core">
-        <span class="num">02</span>
-        <h3>Связываем сервисы</h3>
-        <p>Подключаем YClients, Telegram, Instagram и WhatsApp на официальных API. Настраиваем сценарии под ваш салон, а не «как у всех».</p>
-      </div>
-    </div>
-    <div class="shell card c3 io" style="--d:.25s">
-      <div class="core">
-        <span class="num">03</span>
-        <h3>Отпускаете рутину</h3>
-        <p>Напоминания, подтверждения, отзывы и отчёты идут сами. Вы занимаетесь мастерами и клиентами.</p>
-      </div>
-    </div>
+    <p class="src-note">Оценка 20-40% — рыночная статистика пропущенных обращений в сервисной индустрии, не обещание результата.</p>
   </div>
 </section>
 
-<section class="section" id="why">
-  <div class="io">
-    <div class="sec-eyebrow">Почему это надёжно</div>
-    <h2>Технологии, а не костыли</h2>
-    <p class="sec-sub">Никаких «серых» обходов API и ботов на личных номерах. Только официальные интеграции, которые не отвалятся через месяц.</p>
-  </div>
-  <div class="feat-grid">
-    <div class="feat io" style="--d:.05s">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>
-      <div><h4>Официальные API</h4><p>YClients, Telegram и WhatsApp Business подключены штатно. Без бана номеров и внезапных блокировок.</p></div>
-    </div>
-    <div class="feat io" style="--d:.1s">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>
-      <div><h4>Работает 24/7</h4><p>Ночная заявка из директа получает ответ сразу, а не утром, когда клиент уже записался в другой салон.</p></div>
-    </div>
-    <div class="feat io" style="--d:.15s">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>
-      <div><h4>Всё в ваших аккаунтах</h4><p>Сценарии и данные принадлежат вам. Доступы у вас, вендор-лока нет: в любой момент можете продолжить без меня.</p></div>
-    </div>
-    <div class="feat io" style="--d:.2s">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>
-      <div><h4>Мониторинг сбоев</h4><p>Любой сбой уходит мне в Telegram раньше, чем вы его заметите. На поддержке чиню за часы, не за дни.</p></div>
-    </div>
-    <div class="feat io" style="--d:.25s">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>
-      <div><h4>Правки без программиста</h4><p>Поменять текст сообщения или время напоминания: одна строка в чате, минута работы.</p></div>
-    </div>
-    <div class="feat io" style="--d:.3s">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>
-      <div><h4>Честные сроки</h4><p>Если задача нереализуема или не окупится, скажу до оплаты, а не после.</p></div>
-    </div>
-  </div>
-</section>
-
-<section class="section light" id="pricing">
-  <div class="io">
-    <div class="sec-eyebrow">Тариф</div>
-    <h2>Один тариф, всё включено</h2>
-    <p class="sec-sub">Без смет, доплат за каждый канал и урезанных версий. Одна подписка в месяц, остановить можно в любой момент.</p>
-  </div>
-  <div class="price-grid single">
-    <div class="shell price featured io" style="--d:.1s">
-      <div class="core">
-        <span class="pop">Единый тариф</span>
-        <h3>Салон под ключ</h3>
-        <div class="val">15 000 ₽ <small>/ мес</small></div>
-        <ul>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>4 канала: YClients, Telegram, Instagram, WhatsApp</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>Безлимитные сообщения и напоминания</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>Все сценарии: записи, подтверждения, отзывы, отчёты</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>Внедрение и настройка входят в цену</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>Поддержка и мониторинг 24/7</li>
-        </ul>
-        <button class="btn btn-primary" data-msgr type="button">Обсудить задачу<span class="ring">↗</span></button>
+<!-- ============ HOW ============ -->
+<section id="how">
+  <div class="wrap">
+    <h2>От сообщения до записи — без человека</h2>
+    <p class="lede">Типичный вечер в салоне с ИИ-администратором. Время реальное, диалог из живого кейса.</p>
+    <div class="tl">
+      <div class="tl-item">
+        <span class="tl-time">21:38</span>
+        <b>Клиент пишет в мессенджер</b>
+        <p>WhatsApp, Telegram или MAX — туда, где ему удобно, даже если салон уже закрыт.</p>
+      </div>
+      <div class="tl-item">
+        <span class="tl-time">21:38</span>
+        <b>ИИ отвечает через несколько секунд</b>
+        <p>Знает услуги, цены и мастеров вашего салона — отвечает по делу, не шаблоном.</p>
+      </div>
+      <div class="tl-item">
+        <span class="tl-time">21:39</span>
+        <b>Уточняет услугу, мастера и время</b>
+        <p>Видит свободные окошки в журнале YClients и предлагает конкретные варианты.</p>
+      </div>
+      <div class="tl-item is-ok">
+        <span class="tl-time">21:39</span>
+        <b>Создаёт запись в YClients</b>
+        <p>Запись появляется в вашем журнале сразу. Никаких переносов и ручного ввода.</p>
+      </div>
+      <div class="tl-item">
+        <span class="tl-time">за 24 часа и за 2 часа</span>
+        <b>Напоминает о визите</b>
+        <p>Клиент подтверждает или переносит в два касания. Неявок становится меньше.</p>
+      </div>
+      <div class="tl-item">
+        <span class="tl-time">после визита</span>
+        <b>Спрашивает отзыв и приглашает вернуться</b>
+        <p>Предлагает следующее окошко и подходящую услугу — повторные визиты растут.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section class="section" id="faq">
-  <div class="io">
-    <div class="sec-eyebrow">Вопросы</div>
-    <h2>Что обычно спрашивают</h2>
-  </div>
-  <div class="faq io">
-    <div class="faq-item open">
-      <button class="faq-q">Сколько занимает внедрение?<span class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
-      <div class="faq-a"><div><p>Точечный сценарий: 3-4 дня. Салон под ключ: 7-10 дней. Ещё пара дней на обкатку на реальных записях, чтобы робот говорил вашим голосом.</p></div></div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-q">Нужен доступ к нашему YClients?<span class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
-      <div class="faq-a"><div><p>Да, API-ключ с правами на расписание и клиентов. Пароль не нужен, доступ можно отозвать в любой момент.</p></div></div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-q">А если у нас не YClients?<span class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
-      <div class="faq-a"><div><p>Напишите, какая у вас система. Если есть API, подключение займёт столько же. Если API нет, скажу честно до начала работ.</p></div></div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-q">Это законно?<span class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
-      <div class="faq-a"><div><p>Только официальные API. Сообщения уходят клиентам, которые сами оставляли контакты. Отписка работает, стоп-лист ведётся автоматически.</p></div></div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-q">Что если что-то сломается?<span class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
-      <div class="faq-a"><div><p>Каждый сценарий под мониторингом: сбой приходит мне в Telegram раньше, чем заметите вы. На поддержке чиню за часы, не за дни.</p></div></div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-q">Кому принадлежат сценарии?<span class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
-      <div class="faq-a"><div><p>Вам. Всё живёт в вашем n8n и ваших аккаунтах. Я не критическая точка: система работает без меня.</p></div></div>
+<!-- ============ FEATURES ============ -->
+<section>
+  <div class="wrap">
+    <h2>Что умеет ИИ-администратор</h2>
+    <p class="lede">Всё работает поверх вашего YClients: журнал, мастера и записи остаются на месте.</p>
+    <div class="feats">
+      <div class="feat"><b>Запись 24/7</b><p>Из WhatsApp, Telegram и MAX — когда клиенту удобно.</p></div>
+      <div class="feat"><b>Прямая интеграция с YClients</b><p>Запись сразу в вашем журнале, переносить ничего не надо.</p></div>
+      <div class="feat"><b>Подтверждения и напоминания</b><p>За 24 часа и за 2 часа до визита — неявок меньше.</p></div>
+      <div class="feat"><b>Автозаполнение отмен</b><p>Освободившееся окошко уходит в лист ожидания само.</p></div>
+      <div class="feat"><b>Ответы на отзывы</b><p>ИИ отвечает от имени салона, плохие — в первую очередь.</p></div>
+      <div class="feat"><b>Допродажи</b><p>Подходящие услуги в диалоге и напоминаниях.</p></div>
+      <div class="feat"><b>Отчёт владельцу</b><p>Загрузка мастеров, неявки, повторные визиты — без Excel.</p></div>
     </div>
   </div>
 </section>
 
-<section class="final light">
-  <div class="io">
-    <div class="sec-eyebrow">Старт</div>
-    <h2>Через неделю рутина уйдёт роботу</h2>
-    <p class="sec-sub">Разберём ваш процесс, соберём первый сценарий, покажу его в работе на реальных записях. Без предоплаты за разговоры.</p>
-    <div class="ctas">
-      <button class="btn btn-primary" data-msgr type="button">Обсудить задачу<span class="ring">↗</span></button>
-      <a class="btn btn-ghost" href="#scenarios">Посмотреть сценарии</a>
+<!-- ============ BENEFITS ============ -->
+<section>
+  <div class="wrap">
+    <h2>Что это даёт салону</h2>
+    <p class="lede">Те же возможности на языке владельца.</p>
+    <div class="bens">
+      <div class="ben"><b>Ни одна заявка не пропадает</b><span>ответ за 10 секунд в любое время суток</span></div>
+      <div class="ben"><b>Меньше пустых стульев</b><span>напоминания плюс автозаполнение отмен</span></div>
+      <div class="ben"><b>Администратор — в зале</b><span>занимается гостями, а не телефоном</span></div>
+      <div class="ben"><b>Цифры салона — без Excel</b><span>владелец видит загрузку и неявки в отчёте</span></div>
+      <div class="ben"><b>Подключение без программиста</b><span>логин и пароль YClients в бота, 5 минут, дальше всё сами</span></div>
     </div>
   </div>
 </section>
 
-<div class="modal-overlay" id="msgr-modal" aria-hidden="true">
-  <div class="modal" role="dialog" aria-modal="true" aria-label="Выбрать мессенджер">
-    <button class="modal-x" data-msgr-close aria-label="Закрыть">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-    </button>
-    <div class="m-ico">
-      <svg viewBox="0 0 32 32"><path d="M18 2 7 18h7l-2 12L25 13h-8l1-11z" fill="#ff5c7a"/></svg>
+<!-- ============ CASE ============ -->
+<section id="case">
+  <div class="wrap">
+    <h2>Живой салон, а не презентация</h2>
+    <p class="lede">Автоматизация уже работает на реальных клиентах.</p>
+    <div class="case">
+      <div class="case-tag">Маомао</div>
+      <small>салон красоты, клиент Level UP с осени 2026</small>
+      <ul>
+        <li>Полный цикл записи из мессенджеров в YClients — от первого сообщения до подтверждения</li>
+        <li>Автоподтверждения и напоминания перед визитом</li>
+        <li>Отчёт владельцу: записи, загрузка мастеров, касания с клиентами</li>
+        <li>Диалог из блока выше — реальный сценарий этого салона</li>
+      </ul>
+      <p class="honest">Проект молодой: пока один публичный кейс. Мы не обещаем «х2 к выручке» — показываем, как система работает в живом салоне, и предлагаем проверить её на ваших данных.</p>
     </div>
-    <h3>Напишите нам</h3>
-    <p class="m-sub">Выберите мессенджер, в котором вам удобнее. Отвечает живой консультант, обычно в течение часа.</p>
-    <div class="msgr-list">
-      <a class="msgr m-tg" href="https://t.me/levelup_support" target="_blank" rel="noopener">
-        <span class="mi"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.4 18.9 19c-.2 1-.8 1.2-1.7.8l-4.6-3.4-2.2 2.1c-.2.2-.5.4-.9.4l.3-4.6L18.2 6c.4-.3-.1-.5-.6-.2L7.3 12.3l-4.5-1.4c-1-.3-1-1 .2-1.4l17.6-6.8c.8-.3 1.5.2 1.3 1.7z"/></svg></span>
-        <span class="mt"><b>Telegram</b><small>@levelup_support — самый быстрый путь</small></span>
-        <span class="ma"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
+  </div>
+</section>
+
+<!-- ============ PRICING ============ -->
+<section id="price">
+  <div class="wrap">
+    <h2>Тарифы</h2>
+    <p class="lede">Разовая стоимость подключения. Что входит — как на прайсе, без мелкого шрифта.</p>
+    <div class="price">
+      <div class="p-row">
+        <div class="p-name"><b>Старт</b><span class="leader"></span><span class="p-price">15 000 ₽</span></div>
+        <p class="p-desc">Подключение ИИ-администратора, запись клиентов из мессенджера, напоминания о визите.</p>
+      </div>
+      <div class="p-row hot">
+        <div class="p-name"><b>Стандарт</b><span class="leader"></span><span class="p-price">30 000 ₽</span></div>
+        <p class="p-desc"><em>Выбирают чаще всего.</em> Все три мессенджера, автозаполнение окошек из листа ожидания, ответы на отзывы, отчёты владельцу.</p>
+      </div>
+      <div class="p-row">
+        <div class="p-name"><b>Бизнес</b><span class="leader"></span><span class="p-price">50 000 ₽</span></div>
+        <p class="p-desc">Всё из «Стандарта» плюс ИИ-маркетолог: контент и акции, скрипты администратора, разбор метрик, чек-лист владельца.</p>
+      </div>
+      <div class="p-addon">
+        <span>Голосовой ассистент — запись голосовыми сообщениями</span>
+        <b>+ 1 000 ₽</b>
+      </div>
+    </div>
+    <div class="price-cta">
+      <a class="btn btn-primary" href="https://t.me/First_connect_levelup_bot" target="_blank" rel="noopener">Обсудить в Telegram</a>
+      <span class="note">Подберём тариф под ваш салон на демо.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONNECT ============ -->
+<section>
+  <div class="wrap">
+    <h2>Как проходит подключение</h2>
+    <p class="lede">От первого сообщения до работающего бота — дней, а не месяцев.</p>
+    <div class="steps">
+      <div class="step">
+        <div><b>Пишете нам в мессенджере</b><p>Показываем демо на примере вашего салона, 5-10 минут.</p></div>
+      </div>
+      <div class="step">
+        <div><b>Подключаете YClients через бота</b><p>Логин и пароль от YClients, 5 минут. Пароль мы не храним.</p></div>
+      </div>
+      <div class="step">
+        <div><b>Настраиваем сценарии</b><p>Обычно 3-4 дня, сложные связки — до 7-10 дней.</p></div>
+      </div>
+      <div class="step">
+        <div><b>Система работает</b><p>Бот отвечает и записывает, отчёты приходят вам сами.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq">
+  <div class="wrap">
+    <h2>Частые вопросы</h2>
+    <div class="faq">
+      <details>
+        <summary>У нас несколько филиалов — как считается?</summary>
+        <p>Зависит от того, сколько баз YClients и журналов нужно подключить. Точные условия обсудим на демо после того, как увидим структуру салона.</p>
+      </details>
+      <details>
+        <summary>Это законно? Как защищены данные клиентов?</summary>
+        <p>Работаем через официальный API YClients с вашими учётными данными: пароль от YClients используется один раз при подключении и не хранится. Данные обрабатываются по 152-ФЗ, политика конфиденциальности размещена на сайте.</p>
+      </details>
+      <details>
+        <summary>А если ИИ не понял клиента?</summary>
+        <p>Диалог передаётся человеку, и клиент получает понятный ответ. Сценарий «не понял — передал сотруднику» встроен с первого дня.</p>
+      </details>
+      <details>
+        <summary>Бот заменит администратора?</summary>
+        <p>Нет. Он снимает рутину — телефон, подтверждения, переносы — чтобы администратор занимался гостями в зале.</p>
+      </details>
+      <details>
+        <summary>Что нужно от нас для запуска?</summary>
+        <p>Аккаунт YClients и 5 минут: подключение проходит через бота, дальше всё делаем мы.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="final">
+  <div class="wrap">
+    <h2>Покажем, как это выглядит на вашем салоне</h2>
+    <p class="lede">Напишите в мессенджере — соберём демо на ваших услугах и мастерах. Без звонков и презентаций на 40 слайдов.</p>
+    <div class="btns">
+      <a class="btn btn-primary" href="https://t.me/First_connect_levelup_bot" target="_blank" rel="noopener">
+        <svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M9.04 15.51 8.9 19.1c.36 0 .7-.15.96-.42l2.3-2.2 4.76 3.48c.87.48 1.5.23 1.72-.8l3.12-14.6c.28-1.3-.47-1.8-1.33-1.5L1.6 9.4c-1.27.5-1.25 1.2-.22 1.5l4.66 1.45L18.3 5.3c.5-.33.96-.15.58.18L9.04 15.5z"/></svg>
+        Telegram
       </a>
-      <a class="msgr m-wa" href="https://wa.me/79000000000" target="_blank" rel="noopener">
-        <span class="mi"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm5.5 13.9c-.2.7-1.2 1.3-1.9 1.4-.5.1-1.2.2-3.4-.7-2.9-1.2-4.7-4.1-4.9-4.3-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.9 2.1c.1.2.1.4 0 .6l-.4.6-.5.5c-.2.2-.3.4-.1.7.2.3.9 1.5 2 2.4 1.4 1.2 2.5 1.6 2.8 1.7.3.1.5.1.7-.1l1-1.2c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.6.4 0 .1 0 .8-.2 1.5z"/></svg></span>
-        <span class="mt"><b>WhatsApp</b><small>Написать в WhatsApp</small></span>
-        <span class="ma"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
-      </a>
-      <a class="msgr m-max" href="https://max.ru" target="_blank" rel="noopener">
-        <span class="mi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18V7.5L9 13l5-5.5V18"/><path d="M16.5 18V8.5c1.8 0 3.5 1.2 3.5 3.5s-1.7 3.5-3.5 3.5"/></svg></span>
-        <span class="mt"><b>МАКС</b><small>Написать в МАКС</small></span>
-        <span class="ma"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
+      <a class="btn btn-ghost" href="#" target="_blank" rel="noopener">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v11H8l-4 3.5V6z" stroke-linejoin="round"/><path d="M8 10.5h8M8 13.5h5" stroke-linecap="round"/></svg>
+        MAX
       </a>
     </div>
-    <p class="m-note">Во всех трёх мессенджерах вас встретит один и тот же консультант.</p>
+    <p class="note">Отвечаем в мессенджере в течение дня.</p>
   </div>
-</div>
+</section>
 
-<footer id="contacts">
-  <div class="foot io">
-    <p>© 2026 Level Up · автоматизация бьюти-бизнеса</p>
-    <p><a href="https://t.me/levelup_support" target="_blank" rel="noopener">Telegram ↗</a></p>
+<footer>
+  <div class="wrap">
+    <div>
+      <b>Level UP</b> — автоматизация салонов на YClients<br>
+      Кургаев Михаил Владимирович, самозанятый (НПД)<br>
+      ИНН 165049818647
+    </div>
+    <div style="align-self:flex-end">
+      Обработка данных — через официальный API YClients, 152-ФЗ
+    </div>
   </div>
 </footer>
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-  }
-}
-</script>
-<script type="module">
-import * as THREE from 'three';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-
-const canvas = document.getElementById('stage');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.setSize(innerWidth, innerHeight);
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x070b14);
-scene.fog = new THREE.Fog(0x070b14, 7.5, 13);
-
-const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 100);
-camera.position.set(0, 0.9, 7.4);
-
-const composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, camera));
-const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 1.05, 0.6, 0.22);
-composer.addPass(bloom);
-composer.addPass(new OutputPass());
-
-/* ---------- world group (graph) ---------- */
-const world = new THREE.Group();
-scene.add(world);
-
-/* central emblem: wire sphere + gyro rings + glowing bolt */
-const emblem = new THREE.Group();
-world.add(emblem);
-
-const wire = new THREE.Mesh(
-  new THREE.IcosahedronGeometry(1.18, 1),
-  new THREE.MeshBasicMaterial({ color:0x33436b, wireframe:true, transparent:true, opacity:0.5 })
-);
-emblem.add(wire);
-
-const ringMat = new THREE.MeshBasicMaterial({ color:0x3a4d78, wireframe:true, transparent:true, opacity:0.4 });
-const ring1 = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.012, 6, 90), ringMat);
-ring1.rotation.x = Math.PI/2.4;
-const ring2 = new THREE.Mesh(new THREE.TorusGeometry(1.72, 0.012, 6, 90), ringMat);
-ring2.rotation.x = Math.PI/1.8; ring2.rotation.z = 0.5;
-emblem.add(ring1, ring2);
-
-/* lightning bolt */
-const boltShape = new THREE.Shape();
-boltShape.moveTo(0.34, 1.05);
-boltShape.lineTo(-0.2, 0.07);
-boltShape.lineTo(-0.02, 0.07);
-boltShape.lineTo(-0.34, -1.05);
-boltShape.lineTo(0.2, -0.07);
-boltShape.lineTo(0.02, -0.07);
-boltShape.closePath();
-const boltGeo = new THREE.ExtrudeGeometry(boltShape, { depth:0.16, bevelEnabled:true, bevelThickness:0.03, bevelSize:0.03, bevelSegments:2 });
-boltGeo.center();
-const bolt = new THREE.Mesh(boltGeo, new THREE.MeshStandardMaterial({
-  color:0xff5c7a, emissive:0xff3860, emissiveIntensity:2.1, roughness:0.35, metalness:0.1
-}));
-emblem.add(bolt);
-
-const coreDot = new THREE.Mesh(
-  new THREE.SphereGeometry(0.09, 16, 16),
-  new THREE.MeshBasicMaterial({ color:0xffc46b })
-);
-emblem.add(coreDot);
-
-/* ---------- node labels ---------- */
-const NODES = [
-  { name:'Telegram',   color:'#53b7f0', pos:new THREE.Vector3( 2.9,  1.05,  0.6), tip:'Напоминания и записи приходят клиентам в Telegram сами' },
-  { name:'Instagram',  color:'#ff5c7a', pos:new THREE.Vector3( 0.9,  2.15, -1.7), tip:'Заявки и комментарии из Instagram превращаются в записи' },
-  { name:'YClients',   color:'#9a8cff', pos:new THREE.Vector3(-2.7,  0.55,  1.2), tip:'Расписание салона обновляется само' },
-  { name:'WhatsApp',   color:'#52d98a', pos:new THREE.Vector3(-1.5, -1.75, -1.4), tip:'Подтверждения и отзывы уходят без администратора' },
-  { name:'Календарь',  color:'#ffd166', pos:new THREE.Vector3( 2.0, -1.55,  1.5), tip:'Смены, отпуска, окна: расписание знает всё' },
-];
-
-function makeLabel(name, color){
-  const scale = 2;
-  const font = `600 ${17*scale}px Manrope, sans-serif`;
-  const cv = document.createElement('canvas');
-  const ctx = cv.getContext('2d');
-  ctx.font = font;
-  const tw = ctx.measureText(name).width;
-  const padX = 16*scale, dotR = 4.5*scale, gap = 8*scale;
-  const w = Math.ceil(padX*2 + dotR*2 + gap + tw), h = Math.ceil(21*scale*1.9);
-  cv.width = w; cv.height = h;
-  const r = h/2;
-  const c2 = cv.getContext('2d');
-  c2.font = font;
-  // pill
-  c2.beginPath();
-  c2.moveTo(r,0); c2.arcTo(w,0,w,h,r); c2.arcTo(w,h,0,h,r); c2.arcTo(0,h,0,0,r); c2.arcTo(0,0,w,0,r);
-  c2.closePath();
-  c2.fillStyle = 'rgba(11,17,32,0.95)';
-  c2.fill();
-  c2.strokeStyle = 'rgba(255,255,255,0.2)';
-  c2.lineWidth = scale;
-  c2.stroke();
-  // dot
-  c2.beginPath();
-  c2.arc(padX+dotR, h/2, dotR, 0, Math.PI*2);
-  c2.shadowColor = color; c2.shadowBlur = 10*scale;
-  c2.fillStyle = color;
-  c2.fill();
-  c2.shadowBlur = 0;
-  // text
-  c2.fillStyle = '#e9eef8';
-  c2.textBaseline = 'middle';
-  c2.fillText(name, padX + dotR*2 + gap, h/2 + scale*0.5);
-
-  const tex = new THREE.CanvasTexture(cv);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 4;
-  const mat = new THREE.SpriteMaterial({ map:tex, transparent:true, fog:false });
-  const sp = new THREE.Sprite(mat);
-  const k = 0.011;
-  sp.scale.set(w*k, h*k, 1);
-  return sp;
-}
-
-const edges = [];
-const hitMeshes = [];
-NODES.forEach(n => {
-  // anchor dot
-  const dot = new THREE.Mesh(
-    new THREE.SphereGeometry(0.055, 12, 12),
-    new THREE.MeshBasicMaterial({ color:new THREE.Color(n.color) })
-  );
-  dot.position.copy(n.pos);
-  world.add(dot);
-  // label sprite above anchor
-  const label = makeLabel(n.name, n.color);
-  label.position.copy(n.pos).add(new THREE.Vector3(0, 0.3, 0));
-  world.add(label);
-  // invisible hit sphere
-  const hit = new THREE.Mesh(
-    new THREE.SphereGeometry(0.55, 8, 8),
-    new THREE.MeshBasicMaterial({ transparent:true, opacity:0, depthWrite:false })
-  );
-  hit.position.copy(n.pos);
-  world.add(hit);
-  hit.userData = { node:n, label, dot };
-  hitMeshes.push(hit);
-  // edge line to center
-  const pts = [ new THREE.Vector3(0,0,0), n.pos.clone() ];
-  const geo = new THREE.BufferGeometry().setFromPoints(pts);
-  const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color:0x3a4d78, transparent:true, opacity:0.42 }));
-  world.add(line);
-  edges.push({ node:n, line, hit });
-});
-
-/* ---------- pulses ---------- */
-const PULSE_COUNT = 16;
-const pulseGeo = new THREE.SphereGeometry(0.038, 10, 10);
-const pulseColors = [0x7dd3fc, 0xff5c7a, 0xffd166, 0x52d98a, 0x9a8cff];
-const pulses = [];
-for (let i=0;i<PULSE_COUNT;i++){
-  const m = new THREE.Mesh(pulseGeo, new THREE.MeshBasicMaterial({ color:pulseColors[i % pulseColors.length] }));
-  m.visible = false;
-  world.add(m);
-  pulses.push({ mesh:m, edge:null, t:0, dir:1, speed:0.5, wait:Math.random()*2 });
-}
-function armPulse(p){
-  p.edge = edges[Math.floor(Math.random()*edges.length)];
-  p.dir = Math.random() < 0.55 ? 1 : -1;   // 1: node->center, -1: center->node
-  p.t = p.dir === 1 ? 0 : 1;
-  p.speed = 0.35 + Math.random()*0.3;
-  p.mesh.visible = true;
-}
-
-/* ---------- interaction ---------- */
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2(10, 10);
-const mousePx = { x:0, y:0 };
-const par = new THREE.Vector2(0, 0); // parallax driver: real mouse only, never touch
-let hovered = null;
-const tip = document.getElementById('tip');
-
-addEventListener('pointermove', e => {
-  mouse.x = (e.clientX / innerWidth) * 2 - 1;
-  mouse.y = -(e.clientY / innerHeight) * 2 + 1;
-  mousePx.x = e.clientX; mousePx.y = e.clientY;
-  if (e.pointerType === 'mouse') { par.x = mouse.x; par.y = mouse.y; }
-});
-
-function layout(){
-  const wide = innerWidth > 1100;
-  world.position.set(wide ? 2.35 : 0, wide ? 0.1 : -0.35, 0);
-  world.scale.setScalar(wide ? 1 : 0.82);
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-  composer.setSize(innerWidth, innerHeight);
-}
-layout();
-addEventListener('resize', layout);
-
-/* ---------- loop ---------- */
-const clock = new THREE.Clock();
-const camBase = new THREE.Vector3(0, 0.9, 7.4);
-
-function animate(){
-  requestAnimationFrame(animate);
-  if (document.hidden) return;
-  const dt = Math.min(clock.getDelta(), 0.05);
-  const t = clock.elapsedTime;
-
-  // slow orbit + breathing
-  world.rotation.y += dt * 0.055;
-  wire.rotation.x += dt * 0.05;
-  wire.rotation.z -= dt * 0.03;
-  ring1.rotation.z += dt * 0.1;
-  ring2.rotation.y -= dt * 0.08;
-  bolt.rotation.y += dt * 0.45;
-  const breath = 1 + Math.sin(t * 1.1) * 0.035;
-  bolt.scale.setScalar(breath);
-  coreDot.scale.setScalar(1 + Math.sin(t * 3.2) * 0.25);
-
-  // raycast hover
-  raycaster.setFromCamera(mouse, camera);
-  const hits = raycaster.intersectObjects(hitMeshes, false);
-  const hit = hits.length ? hits[0].object : null;
-  if (hit !== hovered){
-    if (hovered){
-      tip.classList.remove('on');
-      document.body.style.cursor = '';
-    }
-    hovered = hit;
-    if (hovered){
-      tip.textContent = hovered.userData.node.tip;
-      tip.classList.add('on');
-      document.body.style.cursor = 'pointer';
-    }
-  }
-  if (hovered){
-    const p = hovered.userData.label.position.clone();
-    world.localToWorld(p);
-    p.project(camera);
-    tip.style.left = ((p.x*0.5+0.5)*innerWidth) + 'px';
-    tip.style.top  = ((-p.y*0.5+0.5)*innerHeight) + 'px';
-  }
-
-  // node hover feedback
-  hitMeshes.forEach(h => {
-    if (!h.userData.base) h.userData.base = h.userData.label.scale.clone();
-    const target = (h === hovered) ? 1.28 : 1;
-    h.userData.cur = (h.userData.cur ?? 1) + (target - (h.userData.cur ?? 1)) * Math.min(1, dt*9);
-    h.userData.label.scale.copy(h.userData.base).multiplyScalar(h.userData.cur);
-    const isH = h === hovered;
-    const op = isH ? 0.95 : 0.42;
-    const col = isH ? 0x9ab4e8 : 0x3a4d78;
-    h.userData.edgeOpacity = (h.userData.edgeOpacity ?? op) + (op - (h.userData.edgeOpacity ?? op)) * Math.min(1, dt*9);
-    edges.forEach(e => {
-      if (e.hit === h){ e.line.material.opacity = h.userData.edgeOpacity; e.line.material.color.setHex(col); }
-    });
-  });
-
-  // pulses
-  pulses.forEach(p => {
-    if (!p.mesh.visible){
-      p.wait -= dt;
-      if (p.wait <= 0) armPulse(p);
-      return;
-    }
-    const boost = (hovered && p.edge && p.edge.hit === hovered) ? 2.4 : 1;
-    p.t += p.dir * p.speed * boost * dt;
-    if ((p.dir === 1 && p.t >= 1) || (p.dir === -1 && p.t <= 0)){
-      p.mesh.visible = false;
-      p.wait = 0.2 + Math.random()*1.8;
-      return;
-    }
-    p.mesh.position.copy(p.edge.node.pos).multiplyScalar(p.t);
-    const fadeIn = Math.min(1, (p.dir===1 ? p.t : 1-p.t) / 0.15 + 0.35);
-    p.mesh.scale.setScalar(0.8 + Math.sin(t*6 + p.t*9) * 0.2 + fadeIn*0.3);
-  });
-
-  // camera parallax (desktop mouse only; par stays 0,0 on touch)
-  camera.position.x += ((camBase.x + par.x*0.32) - camera.position.x) * Math.min(1, dt*2.2);
-  camera.position.y += ((camBase.y + par.y*0.22) - camera.position.y) * Math.min(1, dt*2.2);
-  camera.lookAt(world.position.x*0.7, 0.1, 0);
-
-  composer.render();
-}
-animate();
-</script>
-
 <script>
-  // scroll reveals
-  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold:0.15 });
-  document.querySelectorAll('.io').forEach(el => io.observe(el));
+(function(){
+  var chat=document.getElementById('chat');
+  if(!chat)return;
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var msgs=chat.querySelectorAll('.msg,.sys');
+  if(reduce)return; // всё видно сразу
 
-  // faq accordion
-  document.querySelectorAll('.faq-item').forEach(it => {
-    it.querySelector('.faq-q').addEventListener('click', () => {
-      const was = it.classList.contains('open');
-      document.querySelectorAll('.faq-item.open').forEach(o => o.classList.remove('open'));
-      if (!was) it.classList.add('open');
-    });
-  });
+  chat.classList.add('sequenced');
+  var typing=document.createElement('div');
+  typing.className='typing';typing.innerHTML='<i></i><i></i><i></i>';
 
-  // mobile nav
-  const navEl = document.querySelector('nav');
-  const burger = document.querySelector('.burger');
-  if (burger){
-    const closeNav = () => { navEl.classList.remove('open'); burger.setAttribute('aria-expanded','false'); };
-    burger.addEventListener('click', () => {
-      const open = navEl.classList.toggle('open');
-      burger.setAttribute('aria-expanded', String(open));
-    });
-    navEl.querySelectorAll('.nav-links a').forEach(a => a.addEventListener('click', closeNav));
-    document.addEventListener('click', e => {
-      if (navEl.classList.contains('open') && !navEl.contains(e.target)) closeNav();
-    });
-    addEventListener('resize', () => { if (innerWidth > 980) closeNav(); });
-  }
-
-  // messenger modal
-  const modal = document.getElementById('msgr-modal');
-  let lastFocus = null;
-  function openModal(){
-    lastFocus = document.activeElement;
-    modal.classList.add('on');
-    modal.setAttribute('aria-hidden','false');
-    document.body.classList.add('locked');
-    const first = modal.querySelector('.msgr');
-    if (first) setTimeout(() => first.focus(), 60);
-  }
-  function closeModal(){
-    modal.classList.remove('on');
-    modal.setAttribute('aria-hidden','true');
-    document.body.classList.remove('locked');
-    if (lastFocus) lastFocus.focus();
-  }
-  document.querySelectorAll('[data-msgr]').forEach(b => b.addEventListener('click', openModal));
-  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-  document.querySelectorAll('[data-msgr-close]').forEach(b => b.addEventListener('click', closeModal));
-  addEventListener('keydown', e => {
-    if (e.key === 'Escape' && modal.classList.contains('on')) closeModal();
-  });
+  // старт после загрузки шрифтов или через 600 мс
+  var start=function(){
+    var i=0;
+    var show=function(el){el.classList.add('shown');};
+    var next=function(){
+      if(i>=msgs.length)return;
+      var el=msgs[i++];
+      var isBot=el.classList.contains('msg-out');
+      if(isBot){
+        chat.querySelector('.chat-body').appendChild(typing);
+        typing.style.display='flex';
+        setTimeout(function(){
+          typing.style.display='none';
+          show(el);
+          setTimeout(next,650);
+        },900);
+      }else{
+        show(el);
+        setTimeout(next,el.classList.contains('sys')?350:650);
+      }
+    };
+    next();
+  };
+  if(document.fonts&&document.fonts.ready){document.fonts.ready.then(start);}
+  setTimeout(start,600); // страховка
+})();
 </script>
 </body>
 </html>
