@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Level UP — ИИ-администратор салона на YClients</title>
-<meta name="description" content="Бот отвечает клиенту в WhatsApp, Telegram и MAX за секунды и создаёт запись прямо в YClients. Напоминания снижают неявки. Показываем демо на данных вашего салона.">
+<meta name="description" content="Автоматизация только для салонов на YClients: бот отвечает клиенту в WhatsApp, Telegram и MAX за секунды и создаёт запись прямо в журнал. Напоминания снижают неявки. Показываем демо на данных вашего салона.">
 <meta property="og:title" content="Level UP — ИИ-администратор салона на YClients">
 <meta property="og:description" content="Запись из мессенджеров в YClients 24/7. Напоминания, автозаполнение окошек, отчёты владельцу.">
 <meta property="og:type" content="website">
@@ -84,11 +84,19 @@ h2{font-family:var(--font-display);font-weight:600;font-size:clamp(1.35rem,2.6vw
 .hero{padding:88px 0 96px}
 .hero .wrap{display:grid;grid-template-columns:1.15fr .95fr;gap:56px;align-items:center}
 .hero h1{font-family:var(--font-display);font-weight:700;font-size:clamp(1.7rem,3.6vw,2.7rem);line-height:1.22;letter-spacing:.005em;margin-bottom:22px}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:9px;
+  font-family:var(--font-display);font-weight:500;font-size:.8rem;letter-spacing:.03em;
+  color:var(--iris);border:1px solid rgba(185,167,242,.45);background:rgba(185,167,242,.09);
+  border-radius:99px;padding:8px 18px;margin-bottom:24px;
+}
+.eyebrow::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--iris);flex:none}
 .hero .sub{color:var(--muted);font-size:1.1rem;max-width:32em;margin-bottom:34px}
 .hero .btns{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px}
 .hero .note{font-size:.875rem;color:var(--muted)}
 .chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px}
 .chips span{font-size:.825rem;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:5px 14px;white-space:nowrap}
+.chips .chip-y{color:var(--iris);border-color:var(--iris);background:rgba(185,167,242,.09);font-weight:600}
 @media(max-width:880px){
   .hero .wrap{grid-template-columns:1fr;gap:48px}
   .hero{padding:64px 0 72px}
@@ -251,8 +259,9 @@ footer b{color:var(--text);font-weight:600}
 <section class="hero" id="top">
   <div class="wrap">
     <div>
-      <h1>ИИ-администратор салона: отвечает и записывает клиентов 24/7</h1>
-      <p class="sub">Бот отвечает клиенту в мессенджере за секунды, уточняет услугу, мастера и время и создаёт запись прямо в YClients. Напоминания снижают неявки.</p>
+      <p class="eyebrow">Автоматизация только для салонов на YClients</p>
+      <h1>ИИ-администратор салона на YClients: отвечает и записывает клиентов 24/7</h1>
+      <p class="sub">Бот отвечает клиенту в WhatsApp, Telegram и MAX за секунды, уточняет услугу, мастера и время и создаёт запись прямо в ваш журнал YClients. Напоминания снижают неявки.</p>
       <div class="btns">
         <a class="btn btn-primary" href="https://t.me/First_connect_levelup_bot" target="_blank" rel="noopener">
           <svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M9.04 15.51 8.9 19.1c.36 0 .7-.15.96-.42l2.3-2.2 4.76 3.48c.87.48 1.5.23 1.72-.8l3.12-14.6c.28-1.3-.47-1.8-1.33-1.5L1.6 9.4c-1.27.5-1.25 1.2-.22 1.5l4.66 1.45L18.3 5.3c.5-.33.96-.15.58.18L9.04 15.5z"/></svg>
@@ -265,7 +274,7 @@ footer b{color:var(--text);font-weight:600}
       </div>
       <p class="note">Заявки принимаем в мессенджерах. Покажем демо на примере вашего салона, 5-10 минут.</p>
       <div class="chips">
-        <span>24/7</span><span>WhatsApp, Telegram, MAX</span><span>YClients</span><span>напоминания</span>
+        <span class="chip-y">Только YClients</span><span>24/7</span><span>WhatsApp, Telegram, MAX</span><span>напоминания</span>
       </div>
     </div>
 
@@ -359,7 +368,7 @@ footer b{color:var(--text);font-weight:600}
 <section>
   <div class="wrap">
     <h2>Что умеет ИИ-администратор</h2>
-    <p class="lede">Всё работает поверх вашего YClients: журнал, мастера и записи остаются на месте.</p>
+    <p class="lede">Автоматизируем только YClients: ваш журнал, мастера и записи остаются на месте.</p>
     <div class="feats">
       <div class="feat"><b>Запись 24/7</b><p>Из WhatsApp, Telegram и MAX — когда клиенту удобно.</p></div>
       <div class="feat"><b>Прямая интеграция с YClients</b><p>Запись сразу в вашем журнале, переносить ничего не надо.</p></div>
@@ -468,6 +477,10 @@ footer b{color:var(--text);font-weight:600}
         <p>Зависит от того, сколько баз YClients и журналов нужно подключить. Точные условия обсудим на демо после того, как увидим структуру салона.</p>
       </details>
       <details>
+        <summary>Работаете с другими системами записи?</summary>
+        <p>Нет. Мы автоматизируем только YClients: интеграция, сценарии и отчёты заточены под него, поэтому подключение быстрое и предсказуемое.</p>
+      </details>
+      <details>
         <summary>Это законно? Как защищены данные клиентов?</summary>
         <p>Работаем через официальный API YClients с вашими учётными данными: пароль от YClients используется один раз при подключении и не хранится. Данные обрабатываются по 152-ФЗ, политика конфиденциальности размещена на сайте.</p>
       </details>
@@ -491,7 +504,7 @@ footer b{color:var(--text);font-weight:600}
 <section class="final">
   <div class="wrap">
     <h2>Покажем, как это выглядит на вашем салоне</h2>
-    <p class="lede">Напишите в мессенджере — соберём демо на ваших услугах и мастерах. Без звонков и презентаций на 40 слайдов.</p>
+    <p class="lede">Напишите в мессенджере — соберём демо на ваших услугах и мастерах из YClients. Без звонков и презентаций на 40 слайдов.</p>
     <div class="btns">
       <a class="btn btn-primary" href="https://t.me/First_connect_levelup_bot" target="_blank" rel="noopener">
         <svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M9.04 15.51 8.9 19.1c.36 0 .7-.15.96-.42l2.3-2.2 4.76 3.48c.87.48 1.5.23 1.72-.8l3.12-14.6c.28-1.3-.47-1.8-1.33-1.5L1.6 9.4c-1.27.5-1.25 1.2-.22 1.5l4.66 1.45L18.3 5.3c.5-.33.96-.15.58.18L9.04 15.5z"/></svg>
