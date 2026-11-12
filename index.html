@@ -200,6 +200,7 @@ h2{font-family:var(--font-display);font-weight:600;font-size:clamp(1.35rem,2.6vw
 .p-name b{font-family:var(--font-display);font-weight:600;font-size:1.2rem}
 .p-name .leader{flex:1;min-width:40px;border-bottom:1px dotted var(--line);transform:translateY(-5px)}
 .p-price{font-family:var(--font-display);font-weight:600;font-size:1.3rem;color:var(--text);white-space:nowrap}
+.p-price small{font-size:.75rem;font-weight:500;color:var(--muted);margin-left:2px}
 .p-desc{grid-column:1/-1;color:var(--muted);font-size:.95rem;max-width:38em}
 .p-desc em{font-style:normal;color:var(--text)}
 .p-addon{padding:22px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:24px;align-items:baseline}
@@ -466,23 +467,23 @@ footer b{color:var(--text);font-weight:600}
 <section id="price">
   <div class="wrap">
     <h2>Тарифы</h2>
-    <p class="lede">Разовая стоимость подключения. Что входит — как на прайсе, без мелкого шрифта.</p>
+    <p class="lede">Стоимость в месяц. Подключение, настройка и поддержка входят в тариф, без мелкого шрифта.</p>
     <div class="price">
       <div class="p-row">
-        <div class="p-name"><b>Старт</b><span class="leader"></span><span class="p-price">15 000 ₽</span></div>
+        <div class="p-name"><b>Старт</b><span class="leader"></span><span class="p-price">15 000 ₽<small>/мес</small></span></div>
         <p class="p-desc">Подключение ИИ-администратора, запись клиентов из мессенджера, напоминания о визите.</p>
       </div>
       <div class="p-row hot">
-        <div class="p-name"><b>Стандарт</b><span class="leader"></span><span class="p-price">30 000 ₽</span></div>
+        <div class="p-name"><b>Стандарт</b><span class="leader"></span><span class="p-price">30 000 ₽<small>/мес</small></span></div>
         <p class="p-desc"><em>Выбирают чаще всего.</em> Все три мессенджера, автозаполнение окошек из листа ожидания, ответы на отзывы, отчёты владельцу.</p>
       </div>
       <div class="p-row">
-        <div class="p-name"><b>Бизнес</b><span class="leader"></span><span class="p-price">50 000 ₽</span></div>
+        <div class="p-name"><b>Бизнес</b><span class="leader"></span><span class="p-price">50 000 ₽<small>/мес</small></span></div>
         <p class="p-desc">Всё из «Стандарта» плюс ИИ-маркетолог: контент и акции, скрипты администратора, разбор метрик, чек-лист владельца.</p>
       </div>
       <div class="p-addon">
         <span>Голосовой ассистент — запись голосовыми сообщениями</span>
-        <b>+ 1 000 ₽</b>
+        <b>+ 1 000 ₽/мес</b>
       </div>
     </div>
     <div class="price-cta">
