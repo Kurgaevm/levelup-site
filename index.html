@@ -105,6 +105,31 @@ h2{font-family:var(--font-display);font-weight:600;font-size:clamp(1.35rem,2.6vw
   .hero{padding:64px 0 72px}
 }
 
+/* ---------- live bot (светлая секция) ---------- */
+.live{
+  min-height:100vh;min-height:100svh;
+  display:flex;align-items:center;
+  background:#F4F2F9;color:#1A1430;
+}
+.live .wrap{width:100%;text-align:center;display:flex;flex-direction:column;align-items:center}
+.live .eyebrow-l{
+  display:inline-flex;align-items:center;gap:9px;
+  font-family:var(--font-display);font-weight:500;font-size:.78rem;letter-spacing:.03em;
+  color:#1A1430;border:1px solid rgba(26,20,48,.22);background:rgba(26,20,48,.05);
+  border-radius:99px;padding:8px 18px;margin-bottom:26px;
+}
+.live .dot{width:8px;height:8px;border-radius:50%;background:#1FA35C;flex:none;animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.live h2{font-size:clamp(1.5rem,3vw,2.2rem);max-width:24ch;margin:0 auto 18px}
+.live .lede{color:#5F5878;margin:0 auto 40px;max-width:46ch}
+.live .btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-bottom:20px}
+.live .btn-dark{background:#1A1430;color:#F2EFFA;border:1px solid #1A1430}
+.live .btn-dark:hover{background:#2B2349;border-color:#2B2349}
+.live .btn-line{background:transparent;color:#1A1430;border:1px solid rgba(26,20,48,.3)}
+.live .btn-line:hover{border-color:#1A1430}
+.live .note{font-size:.875rem;color:#5F5878}
+@media(max-width:600px){.live{padding:72px 0}}
+
 /* ---------- chat panel ---------- */
 .chat{
   font-family:var(--font-chat);
@@ -249,6 +274,7 @@ footer b{color:var(--text);font-weight:600}
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   .typing i{animation:none;opacity:.5}
+  .live .dot{animation:none}
   *{transition:none!important}
 }
 </style>
@@ -317,29 +343,25 @@ footer b{color:var(--text);font-weight:600}
   </div>
 </section>
 
-<!-- ============ PROBLEM ============ -->
-<section>
+<!-- ============ LIVE BOT (светлый фулскрин, замена блока болей) ============ -->
+<section class="live" id="bot">
   <div class="wrap">
-    <h2>Пока администратор занят, клиенты уходят</h2>
-    <p class="lede">Салон теряет записи не потому, что услуга плохая, а потому что ответ приходит слишком поздно.</p>
-    <div class="rows">
-      <div class="row-line">
-        <b>Сообщение осталось без ответа</b>
-        <p>Администратор занят гостями или на линии, переписка в мессенджере стоит. Клиент не ждёт и записывается там, где ответили первым.</p>
-      </div>
-      <div class="row-line">
-        <b>Клиент написал вечером — ответ утром</b>
-        <p>К моменту ответа он уже записан в другом месте. Вечер и выходные — пиковое время записей.</p>
-      </div>
-      <div class="row-line">
-        <b>Подтверждения и переносы — руками</b>
-        <p>Администратор звонит по списку вместо того, чтобы работать с гостями в зале.</p>
-      </div>
-      <div class="row-line">
-        <b>Неявка — потерянное окошко</b>
-        <p>Мастер простаивает, слот не продать задним числом, а в листе ожидания кто-то готов был прийти.</p>
-      </div>
+    <p class="eyebrow-l"><span class="dot" aria-hidden="true"></span>Бот салона «Маомао» — сейчас онлайн</p>
+    <h2>Напишите боту, который прямо сейчас работает в салоне</h2>
+    <p class="lede">Это не презентация: тот же бот отвечает гостям работающего салона «Маомао». Спросите услугу, время или мастера — он ответит как настоящий администратор.</p>
+    <div class="btns">
+      <!-- ЗАГЛУШКА: заменить href на ссылку TG-бота Маомао -->
+      <a class="btn btn-dark" href="#" target="_blank" rel="noopener">
+        <svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M9.04 15.51 8.9 19.1c.36 0 .7-.15.96-.42l2.3-2.2 4.76 3.48c.87.48 1.5.23 1.72-.8l3.12-14.6c.28-1.3-.47-1.8-1.33-1.5L1.6 9.4c-1.27.5-1.25 1.2-.22 1.5l4.66 1.45L18.3 5.3c.5-.33.96-.15.58.18L9.04 15.5z"/></svg>
+        Написать в Telegram
+      </a>
+      <!-- ЗАГЛУШКА: заменить href на ссылку MAX-бота Маомао -->
+      <a class="btn btn-line" href="#" target="_blank" rel="noopener">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v11H8l-4 3.5V6z" stroke-linejoin="round"/><path d="M8 10.5h8M8 13.5h5" stroke-linecap="round"/></svg>
+        Написать в MAX
+      </a>
     </div>
+    <p class="note">Демо-режим: номер телефона бот не спрашивает, записей не создаёт.</p>
   </div>
 </section>
 
