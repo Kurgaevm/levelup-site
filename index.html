@@ -56,7 +56,20 @@ nav .links{display:flex;gap:28px;align-items:center}
 nav .links a{color:var(--muted);text-decoration:none;font-size:.925rem}
 nav .links a:hover{color:var(--text)}
 nav .links a.btn:hover{color:var(--btn-text)}
-@media(max-width:760px){nav .links a:not(.nav-cta){display:none}}
+/* burger (мобильное меню) */
+.burger{display:none;background:none;border:0;cursor:pointer;padding:10px;margin:-10px;flex:none}
+.burger span{display:block;width:22px;height:2px;border-radius:2px;background:var(--text);margin:5px 0;transition:transform .25s ease,opacity .25s ease}
+.burger.x span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.burger.x span:nth-child(2){opacity:0}
+.burger.x span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.mmenu{display:none;position:fixed;top:64px;left:0;right:0;z-index:49;background:rgba(23,19,33,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);flex-direction:column;padding:6px 24px 20px}
+.mmenu.open{display:flex}
+.mmenu a{color:var(--text);text-decoration:none;font-size:1.05rem;padding:14px 4px;border-bottom:1px solid var(--line-soft)}
+.mmenu a.btn{border-bottom:none;margin:10px 0 2px;justify-content:center;color:var(--btn-text)}
+@media(max-width:760px){
+  nav .links a:not(.nav-cta){display:none}
+  .burger{display:block}
+}
 
 /* ---------- buttons ---------- */
 .btn{
@@ -98,6 +111,31 @@ h2{font-family:var(--font-display);font-weight:600;font-size:clamp(1.35rem,2.6vw
 .chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px}
 .chips span{font-size:.825rem;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:5px 14px;white-space:nowrap}
 .chips .chip-y{color:var(--iris);border-color:var(--iris);background:rgba(185,167,242,.09);font-weight:600}
+/* призыв под кнопками ботов: пальцы вверх + крупная надпись */
+.cta-fingers{display:flex;gap:10.5rem;padding-left:5.25rem;font-size:1.35rem;line-height:1;margin:4px 0 12px}
+.cta-fingers span{display:inline-block;animation:finger-bounce 1.7s ease-in-out infinite}
+.cta-fingers span:nth-child(2){animation-delay:.3s}
+@keyframes finger-bounce{0%,100%{transform:translateY(3px)}50%{transform:translateY(-3px)}}
+.cta-callout{font-family:var(--font-display);font-weight:600;font-size:clamp(1.2rem,2.4vw,1.55rem);line-height:1.28;margin:0 0 10px}
+.cta-callout em{font-style:normal;color:var(--iris)}
+.cta-tagline{color:var(--muted);font-size:1rem}
+.cta-tagline b{color:var(--iris);font-weight:600}
+@media(max-width:480px){.cta-fingers{gap:5rem;padding-left:2.25rem}}
+/* центрированный вариант в финальном CTA */
+.final .cta-fingers{justify-content:center;padding-left:0}
+/* блики на кнопках ботов: световая полоса + подсветка */
+.hero .btns .btn{position:relative;overflow:hidden;animation:btn-glow 3.2s ease-out infinite}
+.hero .btns .btn::after{
+  content:"";position:absolute;top:-50%;bottom:-50%;width:38%;left:-60%;
+  transform:skewX(-20deg);pointer-events:none;
+  animation:btn-glint 3.2s ease-in-out infinite;
+}
+.hero .btn-primary::after{background:linear-gradient(100deg,transparent,rgba(122,92,219,.35),transparent)}
+.hero .btn-ghost::after{background:linear-gradient(100deg,transparent,rgba(255,255,255,.42),transparent)}
+.hero .btns .btn:nth-of-type(2){animation-delay:.6s}
+.hero .btns .btn:nth-of-type(2)::after{animation-direction:reverse;animation-delay:.6s}
+@keyframes btn-glint{0%{left:-60%}60%,100%{left:130%}}
+@keyframes btn-glow{0%{box-shadow:0 0 0 0 rgba(185,167,242,.45)}70%,100%{box-shadow:0 0 0 10px rgba(185,167,242,0)}}
 @media(max-width:880px){
   .hero .wrap{grid-template-columns:1fr;gap:48px}
   .hero{padding:64px 0 72px}
@@ -259,7 +297,7 @@ details p{color:var(--muted);font-size:.975rem;padding:0 0 24px;max-width:38em}
 
 /* ---------- final cta ---------- */
 .final .wrap{text-align:center;display:flex;flex-direction:column;align-items:center}
-.final h2{max-width:18em}
+.final h2{max-width:18em;font-size:clamp(1.85rem,4vw,2.8rem);line-height:1.2}
 .final .lede{margin-bottom:36px}
 .final .btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
 .final .note{margin-top:18px;font-size:.9rem;color:var(--muted)}
@@ -273,6 +311,8 @@ footer b{color:var(--text);font-weight:600}
   html{scroll-behavior:auto}
   .typing i{animation:none;opacity:.5}
   .live .dot{animation:none}
+  .hero .btns .btn,.hero .btns .btn::after{animation:none}
+  .cta-fingers span{animation:none}
   *{transition:none!important}
 }
 </style>
@@ -287,10 +327,20 @@ footer b{color:var(--text);font-weight:600}
       <a href="#price">Тарифы</a>
       <a href="#case">Кейс</a>
       <a href="#faq">Вопросы</a>
-      <a class="btn btn-primary nav-cta" style="padding:9px 18px;font-size:.9rem" href="https://t.me/First_connect_levelup_bot" target="_blank" rel="noopener">Демо</a>
+      <a class="btn btn-primary nav-cta" style="padding:9px 18px;font-size:.9rem" href="https://t.me/First_connect_levelup_bot" target="_blank" rel="noopener">Консультация</a>
     </div>
+    <button class="burger" id="burger" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="mmenu">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </nav>
+<div class="mmenu" id="mmenu">
+  <a href="#how">Как работает</a>
+  <a href="#price">Тарифы</a>
+  <a href="#case">Кейс</a>
+  <a href="#faq">Вопросы</a>
+  <a class="btn btn-primary" href="https://t.me/First_connect_levelup_bot" target="_blank" rel="noopener">Консультация</a>
+</div>
 
 <!-- ============ HERO ============ -->
 <section class="hero" id="top">
@@ -309,14 +359,17 @@ footer b{color:var(--text);font-weight:600}
       <div class="btns">
         <a class="btn btn-primary" href="https://t.me/First_connect_levelup_bot" target="_blank" rel="noopener">
           <svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M9.04 15.51 8.9 19.1c.36 0 .7-.15.96-.42l2.3-2.2 4.76 3.48c.87.48 1.5.23 1.72-.8l3.12-14.6c.28-1.3-.47-1.8-1.33-1.5L1.6 9.4c-1.27.5-1.25 1.2-.22 1.5l4.66 1.45L18.3 5.3c.5-.33.96-.15.58.18L9.04 15.5z"/></svg>
-          Telegram
+          Бот Telegram
         </a>
+        <!-- ЗАГЛУШКА: заменить href на ссылку MAX-бота консультаций по продуктам -->
         <a class="btn btn-ghost" href="#" target="_blank" rel="noopener">
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v11H8l-4 3.5V6z" stroke-linejoin="round"/><path d="M8 10.5h8M8 13.5h5" stroke-linecap="round"/></svg>
-          MAX
+          Бот MAX
         </a>
       </div>
-      <p class="note">Заявки принимаем в мессенджерах. Покажем демо на примере вашего салона, 5-10 минут.</p>
+      <div class="cta-fingers" aria-hidden="true"><span>👆</span><span>👆</span></div>
+      <p class="cta-callout">Консультация по продукту <em>24/7</em></p>
+      <p class="cta-tagline">Поднимай свой уровень вместе с <b>Level UP</b></p>
       <div class="chips">
         <span class="chip-y">Только YClients</span><span>24/7</span><span>WhatsApp, Telegram, MAX</span><span>напоминания</span>
       </div>
@@ -571,8 +624,8 @@ footer b{color:var(--text);font-weight:600}
 <!-- ============ FINAL CTA ============ -->
 <section class="final">
   <div class="wrap">
-    <h2>Покажем, как это выглядит на вашем салоне</h2>
-    <p class="lede">Напишите в мессенджере — соберём демо на ваших услугах и мастерах из YClients. Без звонков и презентаций на 40 слайдов.</p>
+    <h2>Напиши нам — ответим в течение минуты</h2>
+    <p class="lede">Соберём демо на ваших услугах и мастерах из YClients. Без звонков и презентаций на 40 слайдов.</p>
     <div class="btns">
       <a class="btn btn-primary" href="https://t.me/First_connect_levelup_bot" target="_blank" rel="noopener">
         <svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M9.04 15.51 8.9 19.1c.36 0 .7-.15.96-.42l2.3-2.2 4.76 3.48c.87.48 1.5.23 1.72-.8l3.12-14.6c.28-1.3-.47-1.8-1.33-1.5L1.6 9.4c-1.27.5-1.25 1.2-.22 1.5l4.66 1.45L18.3 5.3c.5-.33.96-.15.58.18L9.04 15.5z"/></svg>
@@ -583,7 +636,9 @@ footer b{color:var(--text);font-weight:600}
         MAX
       </a>
     </div>
-    <p class="note">Отвечаем в мессенджере в течение дня.</p>
+    <div class="cta-fingers" aria-hidden="true"><span>👆</span><span>👆</span></div>
+    <p class="cta-callout">Консультация по продукту <em>24/7</em></p>
+    <p class="cta-tagline">Поднимай свой уровень вместе с <b>Level UP</b></p>
   </div>
 </section>
 
@@ -642,6 +697,29 @@ footer b{color:var(--text);font-weight:600}
   if(document.fonts&&document.fonts.ready){document.fonts.ready.then(start);}
   setTimeout(start,600); // страховка
 })();
+
+// мобильное меню (бургер)
+(function(){
+  var burger=document.getElementById('burger'),menu=document.getElementById('mmenu');
+  if(!burger||!menu)return;
+  var close=function(){
+    menu.classList.remove('open');
+    burger.classList.remove('x');
+    burger.setAttribute('aria-expanded','false');
+    burger.setAttribute('aria-label','Открыть меню');
+  };
+  burger.addEventListener('click',function(){
+    var open=!menu.classList.contains('open');
+    if(open){
+      menu.classList.add('open');
+      burger.classList.add('x');
+      burger.setAttribute('aria-expanded','true');
+      burger.setAttribute('aria-label','Закрыть меню');
+    }else{close();}
+  });
+  menu.addEventListener('click',function(e){if(e.target.closest('a'))close();});
+  window.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+})();
 </script>
 
 <!-- cookie banner -->
@@ -649,6 +727,7 @@ footer b{color:var(--text);font-weight:600}
 .ckbn{position:fixed;left:16px;right:16px;bottom:16px;z-index:120;max-width:720px;margin:0 auto;background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:14px 18px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;font-size:.85rem;color:var(--muted);box-shadow:0 12px 32px rgba(0,0,0,.4)}
 .ckbn a{color:var(--iris)}
 .ckbn button{font-family:var(--font-body);font-size:.85rem;font-weight:600;color:#171321;background:var(--iris);border:0;border-radius:9px;padding:9px 18px;cursor:pointer}
+.ckbn[hidden]{display:none!important}
 </style>
 <div class="ckbn" id="ckbn" hidden>
   <span>Мы используем только технические cookie для работы сайта и личного кабинета. Без аналитики и рекламы. <a href="/cookies">Подробнее</a></span>
@@ -656,14 +735,15 @@ footer b{color:var(--text);font-weight:600}
 </div>
 <script>
 (function(){
-  try{
-    if(localStorage.getItem('lu_cookie_ok'))return;
-    var b=document.getElementById('ckbn');
-    b.hidden=false;
-    document.getElementById('ckbn-ok').addEventListener('click',function(){
-      localStorage.setItem('lu_cookie_ok','1');b.hidden=true;
-    });
-  }catch(e){}
+  var ok=false;
+  try{ok=localStorage.getItem('lu_cookie_ok')==='1';}catch(e){}
+  if(ok)return;
+  var b=document.getElementById('ckbn');
+  b.hidden=false;
+  document.getElementById('ckbn-ok').addEventListener('click',function(){
+    b.hidden=true;
+    try{localStorage.setItem('lu_cookie_ok','1');}catch(e){}
+  });
 })();
 </script>
 </body>
