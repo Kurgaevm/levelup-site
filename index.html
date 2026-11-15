@@ -70,6 +70,7 @@ nav .links a.btn:hover{color:var(--btn-text)}
 .mmenu button.btn{border-bottom:none;margin:2px 0 4px;color:var(--text)}
 @media(max-width:760px){
   nav .links a:not(.nav-cta){display:none}
+  nav .links .ghost-cta{display:none}
   .burger{display:block}
 }
 
@@ -354,7 +355,8 @@ footer b{color:var(--text);font-weight:600}
       <a href="#price">Тарифы</a>
       <a href="#case">Кейс</a>
       <a href="#faq">Вопросы</a>
-      <button class="btn btn-ghost nav-cta" style="padding:9px 18px;font-size:.9rem" type="button" data-consult>Консультация</button>
+      <button class="btn btn-ghost nav-cta ghost-cta" style="padding:9px 18px;font-size:.9rem" type="button" data-consult>Консультация</button>
+      <a class="btn btn-primary nav-cta" style="padding:9px 18px;font-size:.9rem" href="/reg">Регистрация</a>
     </div>
     <button class="burger" id="burger" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="mmenu">
       <span></span><span></span><span></span>
@@ -367,6 +369,7 @@ footer b{color:var(--text);font-weight:600}
   <a href="#case">Кейс</a>
   <a href="#faq">Вопросы</a>
   <button class="btn btn-ghost" type="button" data-consult>Консультация</button>
+  <a class="btn btn-primary" href="/reg">Регистрация</a>
 </div>
 
 <!-- ============ HERO ============ -->
@@ -393,13 +396,9 @@ footer b{color:var(--text);font-weight:600}
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v11H8l-4 3.5V6z" stroke-linejoin="round"/><path d="M8 10.5h8M8 13.5h5" stroke-linecap="round"/></svg>
           Бот MAX
         </a>
-        <a class="btn btn-primary" href="/reg">
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Регистрация
-        </a>
       </div>
       <div class="cta-fingers" aria-hidden="true"><span>👆</span><span>👆</span></div>
-      <p class="cta-callout">Регистрация за 2 минуты · Консультация <em>24/7</em></p>
+      <p class="cta-callout">Консультация <em>24/7</em></p>
       <p class="cta-tagline">Поднимай свой уровень вместе с <b>Level UP</b></p>
       <div class="chips">
         <span class="chip-y">Только YClients</span><span>24/7</span><span>WhatsApp, Telegram, MAX</span><span>напоминания</span>
