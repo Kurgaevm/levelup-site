@@ -66,10 +66,38 @@ nav .links a.btn:hover{color:var(--btn-text)}
 .mmenu.open{display:flex}
 .mmenu a{color:var(--text);text-decoration:none;font-size:1.05rem;padding:14px 4px;border-bottom:1px solid var(--line-soft)}
 .mmenu a.btn{border-bottom:none;margin:10px 0 2px;justify-content:center;color:var(--btn-text)}
+.mmenu .btn{width:100%;justify-content:center}
+.mmenu button.btn{border-bottom:none;margin:2px 0 4px;color:var(--text)}
 @media(max-width:760px){
   nav .links a:not(.nav-cta){display:none}
+  nav .links .ghost-cta{display:none}
   .burger{display:block}
 }
+
+/* ---------- модалка «Консультация» ---------- */
+.cmodal{position:fixed;inset:0;z-index:110;display:flex;align-items:center;justify-content:center;padding:20px}
+.cmodal[hidden]{display:none}
+.cmodal-bg{position:absolute;inset:0;background:rgba(12,9,20,.7);backdrop-filter:blur(6px)}
+.cmodal-card{position:relative;z-index:1;background:var(--surface-2);border:1px solid var(--line);border-radius:16px;padding:26px 24px 22px;max-width:400px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.5);max-height:calc(100vh - 40px);overflow:auto}
+.cmodal-card h3{font-family:var(--font-display);font-size:1.15rem;margin-bottom:6px}
+.cmodal-sub{color:var(--muted);font-size:.9rem;margin-bottom:16px}
+.cmodal-bots{display:flex;flex-direction:column;gap:10px}
+.cmodal-bots .btn{justify-content:center}
+.cmodal-div{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:.78rem;margin:16px 0;text-transform:uppercase;letter-spacing:.06em}
+.cmodal-div:before,.cmodal-div:after{content:'';flex:1;height:1px;background:var(--line)}
+.cmodal-callhead{font-family:var(--font-display);font-weight:600;font-size:.95rem;margin-bottom:10px}
+.cmodal-form{display:flex;flex-direction:column;gap:10px}
+.cmodal-form input{font-family:var(--font-body);font-size:.95rem;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;width:100%}
+.cmodal-form input::placeholder{color:var(--muted)}
+.cmodal-form input:focus{outline:2px solid var(--iris);outline-offset:0;border-color:transparent}
+.cmodal-form input.hp{position:absolute;left:-4000px;opacity:0;height:0;width:0}
+.cmodal-form .btn{justify-content:center}
+.cmodal-note{font-size:.75rem;color:var(--muted);text-align:center;margin:0}
+.cmodal-note a{color:var(--iris)}
+.cmodal-ok{display:flex;gap:10px;align-items:flex-start;background:rgba(134,227,174,.08);border:1px solid rgba(134,227,174,.35);color:var(--ok);border-radius:10px;padding:12px 14px;font-size:.9rem;line-height:1.5}
+.cmodal-err{color:var(--rose);font-size:.8rem;text-align:center}
+.cmodal-x{position:absolute;top:10px;right:10px;background:none;border:0;color:var(--muted);font-size:1.05rem;cursor:pointer;padding:6px 10px;border-radius:8px;line-height:1}
+.cmodal-x:hover{color:var(--text);background:var(--surface)}
 
 /* ---------- buttons ---------- */
 .btn{
@@ -327,7 +355,8 @@ footer b{color:var(--text);font-weight:600}
       <a href="#price">Тарифы</a>
       <a href="#case">Кейс</a>
       <a href="#faq">Вопросы</a>
-      <a class="btn btn-primary nav-cta" style="padding:9px 18px;font-size:.9rem" href="https://t.me/First_connect_levelup_bot" target="_blank" rel="noopener">Консультация</a>
+      <a class="btn btn-primary nav-cta" style="padding:9px 18px;font-size:.9rem" href="/reg">Регистрация</a>
+      <button class="btn btn-ghost nav-cta ghost-cta" style="padding:9px 18px;font-size:.9rem" type="button" data-consult>Консультация</button>
     </div>
     <button class="burger" id="burger" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="mmenu">
       <span></span><span></span><span></span>
@@ -339,7 +368,8 @@ footer b{color:var(--text);font-weight:600}
   <a href="#price">Тарифы</a>
   <a href="#case">Кейс</a>
   <a href="#faq">Вопросы</a>
-  <a class="btn btn-primary" href="https://t.me/First_connect_levelup_bot" target="_blank" rel="noopener">Консультация</a>
+  <a class="btn btn-primary" href="/reg">Регистрация</a>
+  <button class="btn btn-ghost" type="button" data-consult>Консультация</button>
 </div>
 
 <!-- ============ HERO ============ -->
@@ -366,9 +396,13 @@ footer b{color:var(--text);font-weight:600}
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v11H8l-4 3.5V6z" stroke-linejoin="round"/><path d="M8 10.5h8M8 13.5h5" stroke-linecap="round"/></svg>
           Бот MAX
         </a>
+        <a class="btn btn-primary" href="/reg">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Регистрация
+        </a>
       </div>
       <div class="cta-fingers" aria-hidden="true"><span>👆</span><span>👆</span></div>
-      <p class="cta-callout">Консультация по продукту <em>24/7</em></p>
+      <p class="cta-callout">Регистрация за 2 минуты · Консультация <em>24/7</em></p>
       <p class="cta-tagline">Поднимай свой уровень вместе с <b>Level UP</b></p>
       <div class="chips">
         <span class="chip-y">Только YClients</span><span>24/7</span><span>WhatsApp, Telegram, MAX</span><span>напоминания</span>
@@ -635,12 +669,48 @@ footer b{color:var(--text);font-weight:600}
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v11H8l-4 3.5V6z" stroke-linejoin="round"/><path d="M8 10.5h8M8 13.5h5" stroke-linecap="round"/></svg>
         MAX
       </a>
+      <a class="btn btn-primary" href="/reg">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Регистрация
+      </a>
     </div>
     <div class="cta-fingers" aria-hidden="true"><span>👆</span><span>👆</span></div>
     <p class="cta-callout">Консультация по продукту <em>24/7</em></p>
     <p class="cta-tagline">Поднимай свой уровень вместе с <b>Level UP</b></p>
   </div>
 </section>
+
+<!-- ============ МОДАЛКА «КОНСУЛЬТАЦИЯ»: боты + заявка на звонок ============ -->
+<div class="cmodal" id="cmodal" hidden>
+  <div class="cmodal-bg" data-close></div>
+  <div class="cmodal-card" role="dialog" aria-modal="true" aria-labelledby="cmodal-title">
+    <button class="cmodal-x" type="button" data-close aria-label="Закрыть">✕</button>
+    <h3 id="cmodal-title">Консультация по продукту</h3>
+    <p class="cmodal-sub">Наши агенты на связи 24/7. Выберите, где удобнее общаться:</p>
+    <div class="cmodal-bots">
+      <a class="btn btn-primary" href="https://t.me/First_connect_levelup_bot" target="_blank" rel="noopener">
+        <svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M9.04 15.51 8.9 19.1c.36 0 .7-.15.96-.42l2.3-2.2 4.76 3.48c.87.48 1.5.23 1.72-.8l3.12-14.6c.28-1.3-.47-1.8-1.33-1.5L1.6 9.4c-1.27.5-1.25 1.2-.22 1.5l4.66 1.45L18.3 5.3c.5-.33.96-.15.58.18L9.04 15.5z"/></svg>
+        Бот Telegram
+      </a>
+      <!-- ЗАГЛУШКА: заменить href на ссылку MAX-бота консультаций по продуктам -->
+      <a class="btn btn-ghost" href="#" target="_blank" rel="noopener">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v11H8l-4 3.5V6z" stroke-linejoin="round"/><path d="M8 10.5h8M8 13.5h5" stroke-linecap="round"/></svg>
+        Бот MAX
+      </a>
+    </div>
+    <div class="cmodal-div"><span>или</span></div>
+    <p class="cmodal-callhead">Заявка на звонок</p>
+    <form class="cmodal-form" id="cform" novalidate>
+      <input type="text" name="name" placeholder="Ваше имя" required maxlength="120" autocomplete="name">
+      <input type="tel" name="phone" placeholder="Телефон для звонка" required maxlength="40" autocomplete="tel">
+      <input class="hp" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button class="btn btn-primary" type="submit" id="cform-btn">Перезвоните мне</button>
+      <p class="cmodal-err" id="cform-err" hidden></p>
+      <p class="cmodal-note">Нажимая кнопку, вы соглашаетесь с <a href="/privacy" target="_blank" rel="noopener">политикой обработки персональных данных</a>.</p>
+    </form>
+    <div class="cmodal-ok" id="cform-ok" hidden>✓ Заявка принята. Перезвоним в ближайшее время — обычно в течение часа в рабочее время.</div>
+  </div>
+</div>
 
 <footer>
   <div class="wrap">
@@ -717,8 +787,46 @@ footer b{color:var(--text);font-weight:600}
       burger.setAttribute('aria-label','Закрыть меню');
     }else{close();}
   });
-  menu.addEventListener('click',function(e){if(e.target.closest('a'))close();});
+  menu.addEventListener('click',function(e){if(e.target.closest('a,button'))close();});
   window.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+})();
+
+// модалка «Консультация»: боты + заявка на звонок
+(function(){
+  var m=document.getElementById('cmodal');
+  if(!m)return;
+  var form=document.getElementById('cform'),btn=document.getElementById('cform-btn'),
+      err=document.getElementById('cform-err'),ok=document.getElementById('cform-ok');
+  var open=function(){m.hidden=false;document.body.style.overflow='hidden';};
+  var close=function(){m.hidden=true;document.body.style.overflow='';};
+  document.querySelectorAll('[data-consult]').forEach(function(b){b.addEventListener('click',open);});
+  m.addEventListener('click',function(e){if(e.target.closest('[data-close]'))close();});
+  window.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var name=form.elements.name.value.trim(),phone=form.elements.phone.value.trim();
+    err.hidden=true;
+    if(!name||!phone){err.textContent='Укажите имя и телефон';err.hidden=false;return;}
+    btn.disabled=true;btn.textContent='Отправляем…';
+    fetch('/api/leads/public',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name:name,phone:phone,company:form.elements.company.value||'',message:'Заявка на звонок с сайта (кнопка «Консультация»)'})
+    }).then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
+      .then(function(res){
+        if(res.ok&&res.d.ok!==false){
+          form.hidden=true;ok.hidden=false;
+        }else{
+          throw new Error('bad');
+        }
+      })
+      .catch(function(){
+        err.textContent='Сеть моргнула — не отправилось. Попробуйте ещё раз или напишите боту Telegram.';
+        err.hidden=false;
+        btn.disabled=false;btn.textContent='Перезвоните мне';
+      });
+  });
 })();
 </script>
 
